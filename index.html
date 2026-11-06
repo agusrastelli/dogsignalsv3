@@ -1734,8 +1734,106 @@ html>body{padding:0}</style>
 #dogapp .progress-line{display:flex;gap:8px;align-items:center;font-size:14px!important;font-weight:600;color:#034f46!important;margin:14px 0 0;--icon-size:18px}
 @media(max-width:600px){#dogapp .side-account{display:none}#dogapp .recap-save{flex-wrap:wrap}}
 #dogapp h1[tabindex="-1"]:focus{outline:none}
+/* Navigation: sidebar on tablet/desktop, top bar + slide-in menu on phones */
+#dogapp .menu-toggle,#dogapp .menu-head,#dogapp .menu-backdrop{display:none}
+#dogapp .menu-panel{display:contents}
+#dogapp .menu-panel>*{flex-shrink:0}
+@media(max-width:600px){
+#dogapp aside{flex-direction:row;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px 8px 16px;height:auto;max-height:none;overflow:visible;border-bottom:1px solid var(--soft-line)!important}
+#dogapp .brand{font-size:22px!important;line-height:1!important;padding:0;gap:6px;min-height:44px}
+#dogapp .brand br{display:none}
+#dogapp .brand .brand-icon{width:26px;height:32px}
+#dogapp .menu-toggle{display:inline-grid;place-items:center;width:44px;height:44px;border-radius:12px;border:1px solid var(--soft-line);background:#fffffa;--icon-size:22px}
+#dogapp .menu-panel{display:flex;flex-direction:column;gap:16px;position:fixed;top:0;right:0;bottom:0;width:min(320px,86vw);background:#ffffeb;border-left:1px solid var(--soft-line);box-shadow:-12px 0 32px rgba(26,26,26,.18);padding:12px 16px calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(100%);visibility:hidden;transition:transform .25s ease,visibility 0s linear .25s;z-index:60;overflow-y:auto}
+#dogapp.menu-open .menu-panel{transform:none;visibility:visible;transition:transform .25s ease}
+#dogapp .menu-backdrop{display:block;position:fixed;inset:0;background:transparent;visibility:hidden;pointer-events:none;transition:background-color .25s ease,visibility 0s linear .25s;z-index:50}
+#dogapp.menu-open .menu-backdrop{background:rgba(26,26,26,.35);visibility:visible;pointer-events:auto;transition:background-color .25s ease}
+#dogapp .menu-head{display:flex;justify-content:space-between;align-items:center;order:-2;font-size:18px}
+#dogapp .menu-close{width:44px;height:44px;border-radius:12px;border:1px solid var(--soft-line);background:#fffffa;display:grid;place-items:center;--icon-size:22px}
+#dogapp .menu-panel nav{display:grid!important;gap:6px}
+#dogapp .menu-panel nav button{width:100%;font-size:16px!important;min-height:48px}
+#dogapp .menu-panel nav svg{width:22px;height:22px}
+#dogapp #dog-profile{order:-1;margin-top:0}
+#dogapp .side-profile{display:flex!important;border-top:0;border-bottom:0;padding:14px;background:#f5edf8;border-radius:12px}
+#dogapp .side-profile .avatar{width:52px;height:52px}
+#dogapp .side-account{display:block!important;padding:8px 4px 0;font-size:14px!important}
+#dogapp .side-account .link{font-size:14px!important}
+}
+@media(max-width:600px) and (prefers-reduced-motion:reduce){#dogapp .menu-panel,#dogapp .menu-backdrop{transition:none}}
+/* Ask Dog Signals: chat */
+#dogapp .ask-entry{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1.5px solid #1a1a1a;border-radius:14px;background:#fff;padding:14px 16px;margin:0 0 26px;min-height:64px}
+#dogapp .ask-entry:hover{background:#f5edf8}
+#dogapp .ask-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+#dogapp .ask-go{font-weight:700;white-space:nowrap}
+#dogapp .bot-avatar{width:36px;height:36px;border-radius:50%;background:#f0d7ff;border:1px solid #85708d;display:grid;place-items:center;flex-shrink:0;--icon-size:18px}
+#dogapp .chat{max-width:780px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100% - 34px)}
+#dogapp .chat-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--soft-line)}
+#dogapp .chat-head h1{margin:0}
+#dogapp .proto-pill{display:inline-block;font-size:12px!important;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#fff8d6;border:1px dashed #b8a24a;border-radius:999px;padding:3px 10px;margin-top:8px}
+#dogapp .chat-tools{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+#dogapp .ctx-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid #d9c2e6;background:#f5edf8;border-radius:999px;padding:4px 14px 4px 4px;font-size:14px!important;min-height:40px}
+#dogapp .ctx-chip[aria-pressed=false]{background:#fffffa;border-color:var(--soft-line)}
+#dogapp .ctx-chip[aria-pressed=false] .avatar{filter:grayscale(1);opacity:.6!important}
+#dogapp .ctx-chip .avatar{width:30px;height:30px;--icon-size:16px}
+#dogapp .new-chat{display:inline-flex;align-items:center;gap:6px;--icon-size:16px}
+#dogapp .chat-log{flex:1;display:flex;flex-direction:column;gap:14px;padding:20px 0 8px}
+#dogapp .chat-empty{text-align:center;padding:16px 0 4px}
+#dogapp .chat-empty .dog{max-height:96px;width:auto}
+#dogapp .chat-empty h2{font-size:26px;margin:10px 0 8px;text-wrap:balance}
+#dogapp .chat-empty>p{max-width:48ch;margin:0 auto 20px}
+#dogapp .suggest-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;text-align:left}
+#dogapp .suggest-q{border:1px solid var(--soft-line);background:#fffffa;border-radius:12px;padding:12px 14px;min-height:60px;font-size:15px!important;line-height:1.35!important;text-align:left;display:flex;gap:10px;align-items:flex-start;--icon-size:18px}
+#dogapp .suggest-q:hover{background:#f5edf8}
+#dogapp .suggest-q svg{flex-shrink:0;margin-top:1px!important;color:#034f46}
+#dogapp .msg{display:flex;gap:10px;align-items:flex-start;scroll-margin-top:12px}
+#dogapp .msg.user{justify-content:flex-end}
+#dogapp .msg .bubble p{margin:0 0 8px}
+#dogapp .msg .bubble p:last-child{margin-bottom:0}
+#dogapp .msg.user .bubble{background:#034f46;border-radius:16px 16px 4px 16px;max-width:80%;padding:10px 14px}
+#dogapp .msg.user .bubble,#dogapp .msg.user .bubble *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#dogapp .msg.bot .bubble{background:#fffffa;border:1px solid var(--soft-line);border-radius:4px 16px 16px 16px;padding:14px 16px;max-width:min(640px,88%);min-width:0}
+#dogapp .ans-sec{margin-top:12px}
+#dogapp .ans-sec ul{margin:4px 0 0;padding-left:20px}
+#dogapp .ans-sec li{margin:3px 0}
+#dogapp .personal-note{display:flex;gap:8px;align-items:center;font-size:14px!important;font-weight:600;color:#034f46!important;background:#f5edf8;border-radius:8px;padding:6px 10px;--icon-size:16px}
+#dogapp .personal-note span{color:#034f46!important}
+#dogapp .safety{display:flex;gap:10px;align-items:flex-start;border-radius:10px;padding:12px 14px;margin:0 0 12px;background:#fff3e0;border:1px solid #e8b77a;--icon-size:20px}
+#dogapp .safety.urgent{background:#fde8e6;border-color:#d9897f}
+#dogapp .safety svg{flex-shrink:0;margin-top:2px!important}
+#dogapp .safety strong{display:block;margin-bottom:2px}
+#dogapp .related-btn{display:inline-flex;align-items:center;gap:8px;margin-top:14px;border:1px solid #034f46;border-radius:10px;padding:8px 12px;background:#edf4ea;font-size:15px!important;font-weight:600;min-height:44px;--icon-size:18px;text-align:left}
+#dogapp .msg-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:10px;border-top:1px solid var(--soft-line);font-size:13px!important}
+#dogapp .msg-foot .muted,#dogapp .msg-foot .link{font-size:13px!important}
+#dogapp .msg-foot .link{min-height:28px!important;padding:0}
+#dogapp .fb{display:flex;align-items:center;gap:2px}
+#dogapp .fb>.muted{margin-right:4px}
+#dogapp .fb-btn{width:36px;height:36px;border-radius:8px;border:1px solid transparent;background:transparent;display:grid;place-items:center;--icon-size:17px}
+#dogapp .fb-btn:hover{background:#f0f0e5}
+#dogapp .fb-btn[aria-pressed=true]{background:#edf4ea;border-color:#9fbfa9}
+#dogapp .followups{display:flex;flex-wrap:wrap;gap:8px;margin:-2px 0 0 46px}
+#dogapp .followups .chip{min-height:40px;padding:6px 14px;font-size:14px!important}
+#dogapp .typing-bubble{padding:12px 16px!important}
+#dogapp .typing{display:inline-flex;gap:5px;align-items:center;height:16px}
+#dogapp .typing span{width:7px;height:7px;border-radius:50%;background:#85708d;animation:dsdot 1s infinite ease-in-out}
+#dogapp .typing span:nth-child(2){animation-delay:.15s}
+#dogapp .typing span:nth-child(3){animation-delay:.3s}
+@keyframes dsdot{0%,80%,100%{transform:translateY(0) scale(.8)}40%{transform:translateY(-3px) scale(1)}}
+#dogapp .composer{position:sticky;bottom:0;padding:12px 0 4px;background:linear-gradient(to top,#ffffeb 82%,rgba(255,255,235,0))}
+#dogapp .composer-box{display:flex;align-items:flex-end;gap:6px;border:1.5px solid #1a1a1a;border-radius:16px;background:#fff;padding:5px}
+#dogapp .composer-box:focus-within{outline:3px solid #034f46;outline-offset:2px}
+#dogapp .composer textarea{flex:1;min-width:0;border:0;resize:none;min-height:44px;max-height:160px;padding:11px 6px;font:inherit;line-height:1.4;background:transparent;outline:none}
+#dogapp .icon-btn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;border:0;background:transparent;flex-shrink:0;--icon-size:20px}
+#dogapp .icon-btn:hover{background:#f0f0e5}
+#dogapp .send-btn,#dogapp .send-btn:hover{background:#034f46;color:#fff!important}
+#dogapp .send-btn:disabled{background:#85708d;cursor:wait}
+#dogapp .chat-disclaimer{font-size:12.5px!important;text-align:center;color:#56564d!important;margin:8px 0 0}
+@media(max-width:600px){#dogapp .suggest-list{grid-template-columns:1fr}#dogapp .followups{margin-left:0}#dogapp .msg.bot .bubble{max-width:100%}#dogapp .msg.bot .bot-avatar{display:none}#dogapp .chat-tools{align-items:flex-start}#dogapp .chat-head h1{font-size:30px}#dogapp .ask-entry{margin-bottom:22px}}
+@media (prefers-reduced-motion:reduce){#dogapp .typing span{animation:none}}
+#dogapp main.is-chat{padding-bottom:0!important}
+#dogapp main.is-chat .composer{background:#ffffeb;padding-bottom:12px;box-shadow:0 -14px 14px -6px #ffffeb}
 </style>
-<div id="dogapp"><aside><button class="brand cursor-interaction" data-go="home"><i data-lucide="dog" class="brand-icon" aria-hidden="true"></i><span>Dog<br>Signals</span></button><nav aria-label="Main navigation"><button class="cursor-interaction" data-go="home"><i data-lucide="house" aria-hidden="true"></i>Home</button><button class="cursor-interaction" data-go="paths"><i data-lucide="book-open" aria-hidden="true"></i>Learning paths</button><button class="cursor-interaction" data-go="guide"><i data-lucide="signpost" aria-hidden="true"></i>Practical guide</button></nav><div id="dog-profile"></div></aside><main id="dog-screen"></main></div>
+<div id="dogapp"><aside><button class="brand cursor-interaction" data-go="home"><i data-lucide="dog" class="brand-icon" aria-hidden="true"></i><span>Dog<br> Signals</span></button><button class="menu-toggle cursor-interaction" data-action="menu-toggle" aria-expanded="false" aria-controls="dog-menu" aria-label="Open menu"><i data-lucide="menu" aria-hidden="true"></i></button><div id="dog-menu" class="menu-panel"><div class="menu-head"><strong>Menu</strong><button class="menu-close cursor-interaction" data-action="menu-close" aria-label="Close menu"><i data-lucide="x" aria-hidden="true"></i></button></div><nav aria-label="Main navigation"><button class="cursor-interaction" data-go="home"><i data-lucide="house" aria-hidden="true"></i>Home</button><button class="cursor-interaction" data-go="paths"><i data-lucide="book-open" aria-hidden="true"></i>Learning paths</button><button class="cursor-interaction" data-go="ask"><i data-lucide="message-circle" aria-hidden="true"></i>Ask a question</button><button class="cursor-interaction" data-go="guide"><i data-lucide="signpost" aria-hidden="true"></i>Practical guide</button></nav><div id="dog-profile"></div></div></aside><div class="menu-backdrop" aria-hidden="true"></div><main id="dog-screen"></main></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (()=>{
 const root=document.getElementById('dogapp'),screen=root.querySelector('#dog-screen'),sideProfile=root.querySelector('#dog-profile');
@@ -1743,7 +1841,7 @@ const dog='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXwAAAF8CAYAAADM5wDKAAD
 const params=new URLSearchParams(location.search),hash=location.hash.slice(1);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store={get(k,d){try{const v=localStorage.getItem('ds3.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('ds3.'+k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem('ds3.'+k)}catch(e){}}};
-if(params.has('reset')||hash==='reset'){['profile','sessions','accounts','currentAccount'].forEach(k=>store.del(k))}
+if(params.has('reset')||hash==='reset'){['profile','sessions','accounts','currentAccount','chat'].forEach(k=>store.del(k))}
 
 /* ---------- Dog profile (onboarding) ---------- */
 const blank=()=>({name:'',photo:'',age:'',breed:'',personality:[],experience:'',learned:'',concerns:[]});
@@ -1829,6 +1927,95 @@ const practiceMedia=()=>`<div><img class="photo" src="${practicePhoto}" alt="Clo
 const scenario=()=>`<div class="explain"><strong>Imagine this situation</strong><p style="margin:8px 0 0">A person is opening this dog’s usual treat container just outside the frame.</p><p class="muted" style="margin:8px 0 0">A hypothetical scenario for this exercise, not a documented fact about the photo.</p></div>`;
 const score=a=>a.filter((x,i)=>x===questions[i].correct).length;
 
+/* ---------- Ask Dog Signals (chat prototype) ----------
+   HANDOFF: getAnswer() returns pre-written example answers. To connect a real model later, replace it with an
+   async call (e.g. a Netlify Function) that returns the same shape:
+   {topic, intro, sections:[[label,[items]]], safety:{level:'urgent'|'pro',title,text}|null, personal, related:{label,go,topic}|null, followups:[...]}
+   Only send the dog profile when the person has "Using <dog>'s profile" switched on. */
+let chat=store.get('chat',[]),chatBusy=false,draftQ='',useProfile=true;
+const KB=[
+{topic:'urgent',re:/\b(pain|hurt(s|ing)?|limp|vomit|throw(ing)? up|not eating|won.?t eat|blood|bleed|poison|chocolate|xylitol|grapes?|raisins?|seizure|collapse|swallow|breath)/,
+ safety:{level:'urgent',title:'Contact your vet',text:'This could be a health issue. Call your vet or an emergency clinic now, especially if something toxic was eaten, or if there is pain, bleeding, collapse or trouble breathing.'},
+ intro:'This sounds like it may be about health, so a vet is the right next step. Dog Signals can’t assess health problems.',
+ sections:[['While you contact the vet',['Note when it started and anything that may have been eaten.','Keep things calm and quiet.','Don’t give human medicine unless your vet says so.']]],followups:[]},
+{topic:'growling',re:/\b(growl|snap|bit(e|es|ing|ten)?\b|nip|aggress|lung(e|es|ing))/,concern:'growling',
+ safety:{level:'pro',title:'Safety first',text:'If there has been a bite or you feel unsafe, contact your vet to rule out pain, then a qualified behavior professional.'},
+ intro:'Thanks for asking about this. A growl is useful information: it’s a way of saying “I need space.”',
+ sections:[['Possible explanations',['Discomfort or pain, especially if this is new.','Worry about a person, a dog or being handled.','Guarding something valued, like food, toys or a resting spot.']],['Questions that would help',['What was happening just before?','Did you notice earlier signals, like freezing, a hard stare or turning away?','Is this new?']],['What you could do',['Calmly stop what was happening and give space.','Don’t punish the growl. It can teach a dog to skip the warning.','Write down the situation to share with a professional.']]],
+ related:{label:'When a dog may need space',go:'path',topic:'When a dog may need space'},followups:['It happens around food or toys','It happens when touched','It started recently']},
+{topic:'sudden-change',re:/\b(recent(ly)?|sudden(ly)?|out of character|never used to|started (doing|to))/,
+ safety:{level:'pro',title:'Check with your vet',text:'A sudden change in behavior is worth a vet visit. Pain or illness often shows up first as a change in behavior.'},
+ intro:'When behavior changes suddenly, health is the first thing to rule out.',
+ sections:[['What you could do',['Book a vet check and describe exactly what changed and when.','Keep a short log of when it happens.','Avoid the situations that trigger it until you know more.']]],followups:['What signals show a dog needs space?']},
+{topic:'worry',re:/\b(hid(e|es|ing)|scared|afraid|fear|shak(e|es|ing)|trembl|cower)/,
+ intro:'Hiding or shaking usually means a dog needs a break from something.',
+ sections:[['Possible explanations',['Worry about a sound, person or place.','Feeling cold or unwell, especially if the shaking is new.','Not having a way to get away from something.']],['Questions that would help',['What was happening just before?','Does it pass once the situation changes?']],['What you could do',['Let the dog hide. A safe spot is a good way to cope.','Don’t pull the dog out or force contact.','If it happens often, talk to your vet and a qualified behavior professional.']]],
+ related:{label:'When a dog may need space',go:'path',topic:'When a dog may need space'},followups:['What signals show a dog needs space?','It happens when guests arrive']},
+{topic:'lip-licking',re:/\b(lick|tongue|lips?\b)/,
+ intro:'Lip licking can mean different things, so the situation around it matters most.',
+ sections:[['Possible explanations',['Food is nearby or expected.','Mild unease, for example during handling, with a new person or in the car.','Something on the lips or nose, like water after drinking.']],['Questions that would help',['What happened just before?','What were the ears, eyes, tail and body doing?','Does it happen in the same situation each time?']],['What you could do',['If food is involved, there’s usually nothing to change.','If it happens during an interaction, pause, give space and watch what happens next.']]],
+ related:{label:'Lesson: Lip licking',go:'lesson'},followups:['It happens when guests arrive','It happens at the vet','What signals show a dog needs space?']},
+{topic:'barking',re:/\bbark/,concern:'barking',
+ intro:'Barking is communication. The reason usually shows in what happens around it.',
+ sections:[['Possible explanations',['Alerting to a sound or someone at the door.','Excitement, for example before a walk or during play.','Worry or frustration, for example when something is approaching or out of reach.','Wanting attention or something to do.']],['Questions that would help',['When does it start, and what happens just before?','Is the body loose and wiggly, or still and tense?','Does it stop when the trigger goes away?']],['What you could do',['Keep a short note of when it happens for a few days. Patterns show up quickly.','Avoid shouting, which can sound like joining in.','If it’s frequent or seems worried, a qualified behavior professional can help you make a plan.']]],
+ related:{label:'Everyday situations: Barking',go:'everyday',topic:'Barking'},followups:['It happens when guests arrive','It happens on walks with other dogs','It happens when I leave']},
+{topic:'visitors',re:/\b(guests?|visitors?|door ?bell|someone (comes|arrives))/,concern:'visitors',
+ intro:'Visitors bring noise, new smells and people coming close, all at once.',
+ sections:[['Possible explanations',['Excitement about new people.','Alerting at the door.','Feeling unsure about people coming in or reaching over.']],['Questions that would help',['What does the body look like when the door opens?','Does it settle after a few minutes?','Does the dog go toward people or move away?']],['What you could do',['Offer a quiet place to retreat, like a bed in another room.','Ask guests to let the dog come to them, and not to lean over.','Keep greetings short and calm.']]],
+ related:{label:'Everyday situations: Visitors at home',go:'everyday',topic:'Visitors at home'},followups:['It hides when guests come','It barks at the doorbell']},
+{topic:'other-dogs',re:/\b(other dogs?|dog park|walks?|leash|pull(s|ing)?|reactive)\b/,concern:'otherdogs',
+ intro:'Meeting other dogs is a lot of information at once. Distance and the whole body tell you the most.',
+ sections:[['Possible explanations',['Excitement and wanting to say hello.','Worry about the other dog, especially up close or head-on.','Frustration at being held back on a leash.']],['Questions that would help',['How close was the other dog when it started?','Was the body loose and curvy, or stiff and still?','Is it different on and off leash?']],['What you could do',['Add distance, for example by crossing the street or turning away.','Keep greetings short and watch both dogs.','Reward calm looking at other dogs from a distance.']]],
+ related:{label:'Everyday situations: Meeting other dogs',go:'everyday',topic:'Meeting other dogs'},followups:['What signals show a dog needs space?','It barks at them']},
+{topic:'alone',re:/\b(alone|i leave|when i.?m out|left at home|separation|while i.?m (out|away|gone))/,concern:'alone',
+ intro:'What happens when a dog is alone is hard to know, because you’re not there to see it.',
+ sections:[['Possible explanations',['Boredom or extra energy.','Worry about being alone.','Noises outside, like deliveries or other dogs.']],['Questions that would help',['Does it start as you leave, or later?','What do you find when you come back?','Is this new?']],['What you could do',['Record a short video while you’re out. It shows what really happens.','Build up time alone in small steps.','If the dog seems distressed, talk to your vet and a qualified behavior professional.']]],
+ related:{label:'Everyday situations: Time alone',go:'everyday',topic:'Time alone'},followups:['It barks when I’m out','It started recently']},
+{topic:'handling',re:/\b(vet|groom|nails?|bath|brush|touch(ed|ing)?|picked up|handl)/,
+ intro:'Being handled, at home or at the vet, means someone else decides what happens. Many dogs find that hard.',
+ sections:[['Possible explanations',['Unfamiliar people, smells and sounds.','Being held still, or touched in sensitive spots like paws or ears.','Pain in the area being touched.']],['What you could do',['Go slowly, and pause when you see signs of unease.','Pair handling with something good, like treats.','Ask your vet about low-stress handling. If one spot seems sensitive, ask them to check it for pain.']]],
+ related:{label:'Lesson: Lip licking',go:'lesson'},followups:['It growls when touched','What signals show a dog needs space?']},
+{topic:'sharing',re:/\b(food|toys?|bowl|bones?|treats?|guard|chew)/,concern:'sharing',
+ intro:'Many dogs care a lot about things they value. Guarding is common, and it can be worked on.',
+ sections:[['Possible explanations',['Worry that the item will be taken away.','Past experience of losing food or toys.','Not enough space to eat or chew in peace.']],['What you could do',['Let the dog eat and chew without people close by.','Trade for something better instead of taking things away.','If there is stiffening, growling or snapping, contact a qualified behavior professional.']]],
+ related:{label:'Everyday situations: Food, toys and sharing',go:'everyday',topic:'Food, toys and sharing'},followups:['It growls when I come close','What signals show a dog needs space?']},
+{topic:'body',re:/\b(tail|wag|yawn|ears?|stare|freez|body language|signals?|space)/,
+ intro:'Single signals make the most sense together with the rest of the body.',
+ sections:[['Signals that often ask for space',['Turning the head or body away.','Freezing, or a hard, fixed stare.','Ears pinned back, a tucked tail, or lip licking and yawning in a tense moment.']],['What you could do',['Look at the whole body, not one part.','When unsure, give a little space and watch what happens next.']]],
+ related:{label:'The whole body matters',go:'path',topic:'The whole body matters'},followups:['Why do dogs lick their lips?','It yawns at the vet']}];
+const KB_DEFAULT={topic:'other',intro:'I can help you think it through. It helps to know three things:',sections:[['Tell me',['What did you see? For example, a lip lick, a growl or a bark.','What was happening just before?','What was the rest of the body doing?']]],followups:[]};
+function chatSuggestions(){const p=useProfile?profile:null,who=p&&p.name&&p.name.trim()?esc(p.name.trim()):'my dog',Who=cap(who),c=(p&&p.concerns)||[],s=[];
+const m={barking:`Why does ${who} bark at the door?`,otherdogs:`${Who} gets excited around other dogs. What should I watch for?`,visitors:'What can I do when guests arrive?',growling:`${Who} growled at me. What does it mean?`,sharing:`${Who} guards toys. How should I respond?`,pain:`How can I tell if ${who} is in pain?`,alone:`What happens when ${who} is home alone?`,walks:`${Who} pulls on walks. Why?`};
+c.forEach(x=>{if(m[x])s.push(m[x])});['Why do dogs lick their lips?','What signals show a dog needs space?',m.barking,m.visitors].forEach(x=>{if(!s.includes(x))s.push(x)});return s.slice(0,4)}
+function getAnswer(q,prof){const t=q.toLowerCase(),k=KB.find(x=>x.re.test(t))||KB_DEFAULT;
+const a={topic:k.topic,intro:k.intro,sections:k.sections,safety:k.safety||null,related:k.related||null,followups:k.followups&&k.followups.length?k.followups:(k.topic==='other'?chatSuggestions().slice(0,3):[]),personal:''};
+if(prof){const n=dname(prof),notes=[];if(k.concern&&(prof.concerns||[]).includes(k.concern))notes.push(`You mentioned this in ${poss(n)} profile.`);
+if(prof.age==='puppy'&&['barking','other-dogs','alone','sharing','visitors'].includes(k.topic))notes.push(`${cap(n)} is a puppy, so a lot of this is still being learned.`);
+if(prof.age==='senior'&&['growling','sudden-change','handling','worry'].includes(k.topic))notes.push('In senior dogs, changes like this can be linked to discomfort, so a vet check is a good idea.');a.personal=notes.join(' ')}
+return a}
+function scrollChat(toLastQuestion){const msgs=screen.querySelectorAll('.msg.user');const last=msgs[msgs.length-1];if(toLastQuestion&&last)last.scrollIntoView({block:'start'});else screen.scrollTop=screen.scrollHeight}
+function saveChat(){store.set('chat',chat)}
+// --- Dog Signals AI: answers come from the Supabase Edge Function "dog-chat" (OpenAI key stays on the server) ---
+const DS_SUPABASE_URL='https://gnyeqxytxhdksrdyulpp.supabase.co';
+const DS_SUPABASE_KEY='sb_publishable_-Bl-lCMiMjTLiT9VX4Y3vg_Bcm_8Oaz'; // publishable key: safe to use in the browser
+let dsSb=null;
+function getSb(){if(!dsSb&&window.supabase&&window.supabase.createClient)dsSb=window.supabase.createClient(DS_SUPABASE_URL,DS_SUPABASE_KEY);return dsSb}
+async function ensureSbSession(sb){const {data}=await sb.auth.getSession();if(data&&data.session)return;const {error}=await sb.auth.signInAnonymously();if(error)throw error}
+function aiContext(prof){if(!prof)return '';const b=[];if(prof.name&&String(prof.name).trim())b.push('name: '+String(prof.name).trim());if(prof.age)b.push('age group: '+prof.age);if(prof.concerns&&prof.concerns.length)b.push('owner concerns: '+prof.concerns.join(', '));return b.length?'\n\n(About my dog: '+b.join('; ')+')':''}
+function aiHistory(){return chat.slice(0,-1).slice(-10).map(m=>m.role==='user'?{role:'user',content:String(m.text||'').slice(0,2000)}:{role:'assistant',content:String((m.a&&(m.a.aiRaw||m.a.intro))||'').replace(/<[^>]+>/g,'').slice(0,2000)}).filter(t=>t.content)}
+async function askAI(text,prof){const sb=getSb();if(!sb)throw new Error('Supabase client not loaded');await ensureSbSession(sb);
+const {data,error}=await sb.functions.invoke('dog-chat',{body:{message:text.slice(0,1800)+aiContext(prof),history:aiHistory()}});
+if(error){let msg=error.message;try{const b=await error.context.json();if(b&&b.error)msg=b.error}catch(e){}throw new Error(msg)}
+if(!data||typeof data.meaning!=='string')throw new Error('Unexpected response from dog-chat');return data}
+function aiAnswer(d,base){const list=x=>(Array.isArray(x)?x:[]).filter(s=>typeof s==='string'&&s.trim()).map(s=>esc(s));const secs=[],w=list(d.watch_for),t=list(d.try_next);
+if(w.length)secs.push(['What to watch for',w]);if(t.length)secs.push(['What you could try',t]);if(typeof d.follow_up==='string'&&d.follow_up.trim())secs.push(['A question that would help',[esc(d.follow_up)]]);
+return {...base,intro:esc(d.meaning),sections:secs,source:'ai',aiRaw:d.meaning}}
+function sendQuestion(text,via){text=(text||'').trim();if(!text||chatBusy)return;chat.push({role:'user',text});draftQ='';const prof=useProfile?profile:null,base=getAnswer(text,prof);
+log('chat-question',{topic:base.topic,viaSuggestion:!!via,chars:text.length});chatBusy=true;saveChat();render();scrollChat(false);
+const finish=a=>{chat.push({role:'bot',a,fb:null});chatBusy=false;saveChat();if(page==='ask'){render();scrollChat(true);const ta=screen.querySelector('#chat-input');if(ta)ta.focus({preventScroll:true})}};
+askAI(text,prof).then(d=>{console.info('[Dog Signals] AI answer',d);log('chat-answer',{source:'ai'});finish(aiAnswer(d,base))}).catch(err=>{const m=String((err&&err.message)||err);console.warn('[Dog Signals] AI answer failed, showing example answer:',m);log('chat-answer',{source:'fallback',error:m.slice(0,120)});finish({...base,source:'fallback'})})}
+function botMsg(m,i){const a=m.a;return `<div class="msg bot"><span class="bot-avatar" aria-hidden="true"><i data-lucide="dog"></i></span><div class="bubble">${a.safety?`<div class="safety ${a.safety.level}"><i data-lucide="${a.safety.level==='urgent'?'triangle-alert':'stethoscope'}" aria-hidden="true"></i><div><strong>${a.safety.title}</strong><span>${a.safety.text}</span></div></div>`:''}${a.personal?`<p class="personal-note"><i data-lucide="dog" aria-hidden="true"></i><span>${a.personal}</span></p>`:''}<p>${a.intro}</p>${(a.sections||[]).map(([l,items])=>`<div class="ans-sec"><p class="label">${l}</p><ul>${items.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('')}${a.related?`<button class="related-btn cursor-interaction" data-go="${a.related.go}" data-topic="${esc(a.related.topic||'')}"><i data-lucide="book-open" aria-hidden="true"></i>${a.related.label} →</button>`:''}<div class="msg-foot"><span class="muted">General guidance, not a diagnosis · <button class="link cursor-interaction" data-go="sources">Sources</button></span><span class="fb">${m.fb?'<span class="muted">Thanks for the feedback.</span>':'<span class="muted">Helpful?</span>'}<button class="fb-btn cursor-interaction" data-feedback="${i}:up" aria-pressed="${m.fb==='up'}" aria-label="Helpful"><i data-lucide="thumbs-up" aria-hidden="true"></i></button><button class="fb-btn cursor-interaction" data-feedback="${i}:down" aria-pressed="${m.fb==='down'}" aria-label="Not helpful"><i data-lucide="thumbs-down" aria-hidden="true"></i></button></span></div></div></div>${i===chat.length-1&&!chatBusy&&a.followups&&a.followups.length?`<div class="followups" role="group" aria-label="Suggested follow-up questions">${a.followups.map(f=>`<button class="chip cursor-interaction" data-ask="${esc(f)}">${esc(f)}</button>`).join('')}</div>`:''}`}
+
 function worked(){const w=W[context];return `<section class="lesson-section worked" aria-labelledby="worked-title"><span class="tag">WORKED EXAMPLE</span><h2 id="worked-title">Read it step by step</h2><p>Same lick, three situations. Choose a situation and see how the reasoning changes.</p><div class="contexts" role="group" aria-label="Choose a situation">${Object.entries(W).map(([k,v])=>`<button class="cursor-interaction" data-context="${k}" aria-pressed="${k===context}">${v.label}</button>`).join('')}</div><ol class="wsteps" aria-live="polite"><li><span class="n">1</span><div><p class="label">What do I see?</p><p>The tongue reaches up toward the nose. This is an observation.</p></div></li><li><span class="n">2</span><div><p class="label">What is happening around the dog?</p><p>${w.happening}</p></div></li><li><span class="n">3</span><div><p class="label">What else does the body show?</p><p>${w.body}</p></div></li><li><span class="n">4</span><div><p class="label">What is a reasonable explanation?</p><p><strong>${w.reading}</strong> ${w.why}</p><p><strong>What could I do?</strong> ${w.respond}</p></div></li></ol><p class="muted">Imagined situations for learning, not facts about the dog in the photo.</p></section>`}
 
 function routes(){return `<div class="routes"><button class="box route cursor-interaction" data-go="path"><i data-lucide="dog" aria-hidden="true"></i><h3>Understand their language</h3><p>Body signals and the context around them.</p><span class="badge">1 lesson available</span></button><button class="box route cursor-interaction" data-go="everyday"><i data-lucide="trees" aria-hidden="true"></i><h3>Everyday situations</h3><p>Barking, visitors, and meeting other dogs.</p><span class="badge">Coming soon</span></button><button class="box route cursor-interaction" data-go="guide"><i data-lucide="house" aria-hidden="true"></i><h3>Your first dog</h3><p>The basics for adoption and your first days together.</p><span class="badge">Coming soon</span></button></div>`}
@@ -1845,12 +2032,12 @@ if(id==='concerns')return `<div class="ob-figure"><span class="ob-icon"><i data-
 return ''}
 
 function render(){
-const onb=['welcome','ob','ready','signup','signin','account-done'].includes(page);root.classList.toggle('is-onboarding',onb);
-const navKey=page==='home'||page.startsWith('concept')?'home':page==='guide'?'guide':page==='research'?'':'paths';
+const onb=['welcome','ob','ready','signup','signin','account-done'].includes(page);root.classList.toggle('is-onboarding',onb);screen.classList.toggle('is-chat',page==='ask');
+const navKey=page==='ask'?'ask':page==='home'||page.startsWith('concept')?'home':page==='guide'?'guide':page==='research'?'':'paths';
 root.querySelectorAll('nav button').forEach(b=>{b.dataset.go===navKey?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
 sideProfile.innerHTML=profile?`<div class="side-profile">${avatar(profile)}<div><strong>${N()==='your dog'?'Your dog':N()}</strong><button class="link cursor-interaction" data-action="edit-profile">Edit profile</button></div></div>`:`<div class="side-profile"><span class="avatar avatar-empty" aria-hidden="true"><i data-lucide="dog"></i></span><div><strong>Your dog</strong><button class="link cursor-interaction" data-action="start-ob">Personalize</button></div></div>`;
 sideProfile.innerHTML+=acct()?`<div class="side-account">Signed in${uname()?' as '+uname():''} · <button class="link cursor-interaction" data-action="signout">Sign out</button></div>`:profile?`<div class="side-account"><button class="link cursor-interaction" data-action="signup" data-from="sidebar">Save with an account</button></div>`:`<div class="side-account">Have an account? <button class="link cursor-interaction" data-action="signin">Sign in</button></div>`;
-const crumbs={home:'Home',guide:'Practical guide',everyday:'Everyday situations',paths:'Learning paths','concept-sounds':'Ideas we’re exploring','concept-ai':'Ideas we’re exploring',research:'Research log',sources:'Sources'};
+const crumbs={home:'Home',ask:'Ask a question',guide:'Practical guide',everyday:'Everyday situations',paths:'Learning paths','concept-sounds':'Ideas we’re exploring','concept-ai':'Ideas we’re exploring',research:'Research log',sources:'Sources'};
 let h=onb?'':`<div class="crumb">Learn / ${crumbs[page]||'Understand their language'}</div>`;const n=N();
 
 if(page==='welcome')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><img class="dog" src="${dog}" alt=""></div><p class="eyebrow center">Dog Signals</p><h1>Understand your dog, one signal at a time.</h1><p class="lead">Short lessons on dog body language, with practice using real photos. Learn what to notice, which situation matters, and how you could respond.</p><ul class="ob-points"><li><i data-lucide="eye" aria-hidden="true"></i>Notice the signal</li><li><i data-lucide="map-pin" aria-hidden="true"></i>Consider the situation</li><li><i data-lucide="heart-handshake" aria-hidden="true"></i>Respond with care</li></ul><p class="muted center">First, a few questions about you and your dog, so we can suggest where to start. About 1 minute.</p><div class="ob-actions"><button class="link cursor-interaction" data-action="ob-skip">Skip for now</button><button class="primary cursor-interaction" data-action="start-ob">Get started →</button></div><p class="signin-line">Already have an account? <button class="link cursor-interaction" data-action="signin">Sign in</button></p></div></div>`;
@@ -1867,8 +2054,9 @@ if(page==='account-done')h+=`<div class="ob"><div class="ob-card"><div class="ob
 
 if(page==='home'){const p=profile,prog=(acct()&&acct().progress&&acct().progress.lipLicking)||(session.practice?{firstScore:session.practice.firstScore}:null);
 if(welcomeBack)h+=`<p class="status-banner" role="status"><i data-lucide="circle-check" aria-hidden="true"></i>Welcome back${uname()?', '+uname():''}. ${p?cap(poss(n))+' profile and progress are':'Your progress is'} loaded.</p>`;
-h+=p?`<div class="hello">${avatar(p,'md')}<div>${profileLine(p)?`<p class="eyebrow">${profileLine(p)}</p>`:''}<h1>Understand ${n},<br>one moment at a time.</h1></div></div>`:`<h1>Understand your dog,<br>one moment at a time.</h1>`;
+h+=p?`<div class="hello">${avatar(p,'md')}<div>${profileLine(p)?`<p class="eyebrow">${profileLine(p)}</p>`:''}<h1>Understand ${n},<br> one moment at a time.</h1></div></div>`:`<h1>Understand your dog,<br> one moment at a time.</h1>`;
 h+=`<section class="box hero"><div><span class="tag">START HERE</span><h2>Lip licking. More than one possibility.</h2><p>Learn the signal, try one with help, then practice on your own.</p><button class="primary cursor-interaction" data-go="lesson">${completed?'Revisit lesson':'Start lesson'} →</button>${prog?`<p class="progress-line"><i data-lucide="circle-check" aria-hidden="true"></i>Completed · First try: ${prog.firstScore} of 3${acct()?' · Saved to your account':''}</p>`:`<p class="muted" style="margin:14px 0 0">Body language · Learn + practice · A few minutes</p>`}</div><img class="dog" src="${dog}" alt=""></section>`;
+h+=`<button class="ask-entry cursor-interaction" data-go="ask"><span class="bot-avatar" aria-hidden="true"><i data-lucide="message-circle"></i></span><span class="ask-text"><strong>Have a question about ${n}?</strong><span class="muted">Ask about barking, walks, signals and more.</span></span><span class="ask-go">Ask →</span></button>`;
 if(p){const s=suggestions(p);h+=`<div class="section-head"><h2>Suggested for ${n}</h2><button class="link cursor-interaction" data-action="edit-profile">Edit ${poss(n)} profile</button></div><div class="routes suggest">${s.map(x=>`<button class="box route cursor-interaction" data-go="${x.go}" data-topic="${esc(x.topic)}"><i data-lucide="${x.icon}" aria-hidden="true"></i><h3>${x.title}</h3><p>${x.text}</p><span class="why">${x.why}</span></button>`).join('')}</div>${(p.concerns||[]).some(c=>c==='pain'||c==='growling')?careNote:''}`}
 else h+=`<div class="strip personalize"><div class="guide-text"><i data-lucide="dog" class="guide-icon" aria-hidden="true"></i><div><strong>Make it about your dog.</strong><div class="muted">Answer a few questions to get suggestions. About 1 minute.</div></div></div><button class="primary cursor-interaction" data-action="start-ob">Personalize →</button></div>`;
 h+=`<h2 class="mt">Explore learning paths</h2>${routes()}<div class="section-head mt"><h2>Ideas we’re exploring</h2></div><div class="routes concepts"><button class="box route cursor-interaction" data-go="concept-sounds"><i data-lucide="audio-lines" aria-hidden="true"></i><h3>Hear the difference</h3><p>Barks, whines and growls, each with the situation around it.</p><span class="badge">Concept · not built yet</span></button><button class="box route cursor-interaction" data-go="concept-ai"><i data-lucide="sparkles" aria-hidden="true"></i><h3>Ask about a photo of ${n}</h3><p>Observation prompts for your own photos and videos.</p><span class="badge">Concept · not built yet</span></button></div><div class="strip"><div class="guide-text"><i data-lucide="book-open" class="guide-icon" aria-hidden="true"></i><div><strong>New to life with a dog?</strong><div class="muted">Start with the practical guide.</div></div></div><button class="link cursor-interaction" data-go="guide">Explore guide →</button></div>`}
@@ -1894,10 +2082,12 @@ if(page==='concept-sounds')h+=`<button class="link cursor-interaction" data-go="
 
 if(page==='concept-ai')h+=`<button class="link cursor-interaction" data-go="home">← Home</button><span class="tag" style="display:table;margin-top:12px">CONCEPT · NOT BUILT YET</span><h1>Ask about a photo of ${n}.</h1><p>Upload a photo or a short video. The assistant doesn’t tell you what ${n} feels. It asks what you notice and points you to lessons that fit.</p><section class="box"><div class="split"><div>${profile&&profile.photo?`<img class="photo" src="${profile.photo}" alt="Your dog’s photo">`:`<div class="placeholder"><i data-lucide="camera" aria-hidden="true"></i><strong>Your photo here</strong><span class="muted">Add a photo in your profile to preview this.</span></div>`}</div><div><p class="label">Step 1 · Look closely</p><p><strong>What do you notice? Start with one area.</strong></p><p>${['Ears','Eyes','Mouth','Body','Tail'].map(x=>`<span class="chip-static">${x}</span>`).join('')}</p><p class="label">Step 2 · Add the situation</p><p>What was happening just before this photo?</p><div class="fake-input">e.g., We were getting ready for a walk</div><p class="label">Step 3 · Keep learning</p><p>Related: Lip licking · The whole body matters</p></div></div></section><div class="explain"><strong>What it would not do</strong><p style="margin:8px 0 0">It would not diagnose emotions, health or behavior problems. For those, talk to a vet or a qualified behavior professional.</p></div>${interest('ai')}`;
 
+if(page==='ask'){const p=profile;h+=`<div class="chat"><div class="chat-head"><div><h1>Ask Dog Signals</h1><p class="muted" style="margin:4px 0 0">Questions about dog behavior, answered with context.</p><span class="proto-pill">Prototype · example answers</span></div><div class="chat-tools">${p?`<button class="ctx-chip cursor-interaction" data-action="toggle-context" aria-pressed="${useProfile}">${avatar(p)}<span>${useProfile?`Using ${poss(n)} profile`:`Not using ${poss(n)} profile`}</span></button>`:''}${chat.length?`<button class="link cursor-interaction new-chat" data-action="new-chat"><i data-lucide="square-pen" aria-hidden="true"></i>New chat</button>`:''}</div></div><div class="chat-log" role="log" aria-live="polite" aria-label="Conversation">${chat.length?chat.map((m,i)=>m.role==='user'?`<div class="msg user"><div class="bubble"><p>${esc(m.text)}</p></div></div>`:botMsg(m,i)).join(''):`<div class="chat-empty"><img class="dog" src="${dog}" alt=""><h2>What would you like to understand${p&&useProfile?` about ${n}`:''}?</h2><p>Describe what you saw and what was happening around it. The more context you share, the more useful the answer.</p><div class="suggest-list">${chatSuggestions().map(q=>`<button class="suggest-q cursor-interaction" data-ask="${esc(q)}"><i data-lucide="message-circle" aria-hidden="true"></i><span>${q}</span></button>`).join('')}</div></div>`}${chatBusy?`<div class="msg bot"><span class="bot-avatar" aria-hidden="true"><i data-lucide="dog"></i></span><div class="bubble typing-bubble" role="status" aria-label="Dog Signals is writing"><span class="typing"><span></span><span></span><span></span></span></div></div>`:''}</div><div class="composer"><div class="composer-box"><button class="icon-btn cursor-interaction" data-go="concept-ai" aria-label="Add a photo (concept, coming soon)" title="Photo questions: coming soon"><i data-lucide="image-plus" aria-hidden="true"></i></button><label for="chat-input" class="sr-only">Your question</label><textarea id="chat-input" rows="1" placeholder="${p&&useProfile?`What did ${n} do?`:'What did your dog do?'}">${esc(draftQ)}</textarea><button class="icon-btn send-btn cursor-interaction" data-action="chat-send" aria-label="Send question" ${chatBusy?'disabled':''}><i data-lucide="arrow-up" aria-hidden="true"></i></button></div><p class="chat-disclaimer">Dog Signals helps you learn. It doesn’t diagnose. For health concerns or bites, contact your vet.</p></div></div>`}
+
 if(page==='sources')h+=`<h1>Learning sources.</h1><section class="box"><h3>Understanding dog body language</h3><p><a href="${source}" target="_blank" rel="noopener">Dogs Trust — Read the guidance ↗</a></p><p>The lesson explores general possibilities, not a diagnosis of the dog in the photograph.</p><h3>Photo credit</h3><p>Gopal Aggarwal, via Wikimedia Commons. CC BY-SA 2.5.</p><p class="muted">Practice photo: MINAMIYAMA / Wikimedia Commons, CC BY-SA 3.0. A different photograph showing the same signal. Scenarios are hypothetical.</p></section><button class="link cursor-interaction" data-go="lesson">← Return to lesson</button>`;
 
 if(page==='research'){const all=Object.values(store.get('sessions',{})).reverse();const v=x=>x===null||x===undefined?'—':x===true?'Yes':x===false?'No':x;
-h+=`<h1>Research log.</h1><p>For the researcher. Sessions recorded in this browser, most recent first. On Netlify, each completed session is also sent to Netlify Forms.</p><div class="table-wrap"><table class="log"><thead><tr><th>Code</th><th>Started</th><th>Onboarding</th><th>Account</th><th>Guided, 1st try</th><th>Practice, 1st try</th><th>Learn (s)</th><th>Lesson total (s)</th><th>Sent</th></tr></thead><tbody>${all.length?all.map(s=>{const m=s.summary||{};return `<tr><td>${esc(s.id)}</td><td>${esc(new Date(s.started).toLocaleString())}</td><td>${s.onboarding?(s.onboarding.skipped?'Skipped':'Done'):'—'}</td><td>${s.account?(s.account.created?'Created':s.account.signedIn?'Signed in':s.account.declined?'Declined':'—'):'—'}</td><td>${v(s.guided?s.guided.firstCorrect:null)}</td><td>${s.practice?s.practice.firstScore+' of 3':'—'}</td><td>${v(m.learnSec)}</td><td>${v(m.lessonTotalSec)}</td><td>${s.submitted?'Yes':'No'}</td></tr>`}).join(''):'<tr><td colspan="9">No sessions yet.</td></tr>'}</tbody></table></div><div class="actions"><button class="primary cursor-interaction" data-action="copy-log">Copy all as JSON</button><button class="link cursor-interaction" data-action="reset-demo">Reset prototype on this device</button></div><p id="copy-status" class="muted" role="status"></p><textarea id="log-json" class="sr-only" readonly>${esc(JSON.stringify(all,null,2))}</textarea>`}
+h+=`<h1>Research log.</h1><p>For the researcher. Sessions recorded in this browser, most recent first. On Netlify, each completed session is also sent to Netlify Forms.</p><div class="table-wrap"><table class="log"><thead><tr><th>Code</th><th>Started</th><th>Onboarding</th><th>Account</th><th>Chat questions</th><th>Guided, 1st try</th><th>Practice, 1st try</th><th>Learn (s)</th><th>Lesson total (s)</th><th>Sent</th></tr></thead><tbody>${all.length?all.map(s=>{const m=s.summary||{};return `<tr><td>${esc(s.id)}</td><td>${esc(new Date(s.started).toLocaleString())}</td><td>${s.onboarding?(s.onboarding.skipped?'Skipped':'Done'):'—'}</td><td>${s.account?(s.account.created?'Created':s.account.signedIn?'Signed in':s.account.declined?'Declined':'—'):'—'}</td><td>${s.events.filter(e=>e.type==='chat-question').length||'—'}</td><td>${v(s.guided?s.guided.firstCorrect:null)}</td><td>${s.practice?s.practice.firstScore+' of 3':'—'}</td><td>${v(m.learnSec)}</td><td>${v(m.lessonTotalSec)}</td><td>${s.submitted?'Yes':'No'}</td></tr>`}).join(''):'<tr><td colspan="10">No sessions yet.</td></tr>'}</tbody></table></div><div class="actions"><button class="primary cursor-interaction" data-action="copy-log">Copy all as JSON</button><button class="link cursor-interaction" data-action="reset-demo">Reset prototype on this device</button></div><p id="copy-status" class="muted" role="status"></p><textarea id="log-json" class="sr-only" readonly>${esc(JSON.stringify(all,null,2))}</textarea>`}
 
 screen.innerHTML=h;
 root.querySelectorAll('button').forEach(b=>b.type='button');
@@ -1916,7 +2106,10 @@ function doSignin(){const em=(screen.querySelector('#si-email').value||'').trim(
 if(!validEmail(em)){er.textContent='Enter an email address like name@example.com.';screen.querySelector('#si-email').focus();return}
 const a=accounts[em];if(!a){er.innerHTML='There’s no account with that email in this prototype. Check the spelling, or <button type="button" class="link cursor-interaction" data-action="start-ob">get started</button>.';return}
 current=em;saveAccounts();if(a.profile){profile=a.profile;store.set('profile',profile)}completed=!!(a.progress&&a.progress.lipLicking);welcomeBack=true;session.account={...(session.account||{}),signedIn:true};log('signin');go('home')}
-function go(p){save();if(p!=='home')welcomeBack=false;if(p==='practice'&&page!=='practice'&&page!=='feedback')q=0;if(p==='practice')qShown=Date.now();page=p;if(p==='recap')completed=true;if(!session.firstSeen[p])session.firstSeen[p]=Date.now();log('view',{page:p});render();screen.scrollTop=0;focusHeading();if(p==='recap'&&session.practice)finish()}
+const menuBtn=root.querySelector('.menu-toggle');
+function setMenu(open,returnFocus){root.classList.toggle('menu-open',open);screen.inert=open;if(menuBtn){menuBtn.setAttribute('aria-expanded',String(open));menuBtn.setAttribute('aria-label',open?'Close menu':'Open menu')}if(open){const f=root.querySelector('#dog-menu nav button[aria-current]')||root.querySelector('#dog-menu nav button');if(f)f.focus()}else if(returnFocus&&menuBtn)menuBtn.focus()}
+try{const mq=matchMedia('(max-width:600px)');mq.addEventListener('change',()=>setMenu(false))}catch(e){}
+function go(p){save();setMenu(false);if(p!=='home')welcomeBack=false;if(p==='practice'&&page!=='practice'&&page!=='feedback')q=0;if(p==='practice')qShown=Date.now();page=p;if(p==='recap')completed=true;if(!session.firstSeen[p])session.firstSeen[p]=Date.now();log('view',{page:p});render();screen.scrollTop=0;focusHeading();if(p==='recap'&&session.practice)finish()}
 function startOb(){draft=profile?{...blank(),...profile,personality:[...(profile.personality||[])],concerns:[...(profile.concerns||[])]}:blank();editing=!!profile;ob=0;log('onboarding-start',{editing});go('ob')}
 function nextQuestion(){save();if(answers[q]===null){screen.querySelector('#dog-error').textContent='Choose one answer. “I’m not sure” is an option, too.';screen.querySelector('input').focus();return}
 if(!firstAnswers)qTime[q]+=Date.now()-qShown;
@@ -1929,12 +2122,15 @@ root.addEventListener('change',e=>{const t=e.target;
 if(t.name==='practice-answer'){save();if(!firstAnswers)qSelections[q]++;return}
 if(t.name==='guided-answer'){g.answer=Number(t.value);const er=screen.querySelector('#dog-error');if(er)er.textContent='';return}
 if(t.id==='ob-photo'&&t.files&&t.files[0]){readPhoto(t.files[0]).then(url=>{draft.photo=url;render();const btn=screen.querySelector('#ob-photo');if(btn)btn.focus()}).catch(()=>{const er=screen.querySelector('#ob-photo-error');if(er)er.textContent='That photo couldn’t be opened. Try a JPG or PNG file.'})}});
-root.addEventListener('input',e=>{if(e.target.id==='ob-name')draft.name=e.target.value;else if(e.target.id==='ob-breed')draft.breed=e.target.value});
+root.addEventListener('input',e=>{if(e.target.id==='ob-name')draft.name=e.target.value;else if(e.target.id==='ob-breed')draft.breed=e.target.value;else if(e.target.id==='chat-input'){draftQ=e.target.value;e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,160)+'px'}});
 root.addEventListener('click',e=>{
 const sum=e.target.closest('details.hint > summary');if(sum){g.hint=!sum.parentElement.open;if(g.hint&&!g.hintUsed){g.hintUsed=true;log('hint')}return}
+if(e.target.closest('.menu-backdrop')){setMenu(false,true);return}
 const b=e.target.closest('button');if(!b||!root.contains(b))return;e.preventDefault();const a=b.dataset.action;
 if(b.dataset.chip){const k=b.dataset.chip,v=b.dataset.value;if(b.dataset.single)draft[k]=draft[k]===v?'':v;else{const arr=draft[k]||[];draft[k]=arr.includes(v)?arr.filter(x=>x!==v):[...arr,v]}render();const nb=screen.querySelector(`[data-chip="${k}"][data-value="${v}"]`);if(nb)nb.focus();return}
 if(b.dataset.interest){session.interest[b.dataset.interest]=b.dataset.value;log('interest',{concept:b.dataset.interest,value:b.dataset.value});render();return}
+if(b.dataset.ask){sendQuestion(b.dataset.ask,true);return}
+if(b.dataset.feedback){const [i,v]=b.dataset.feedback.split(':'),m=chat[+i];if(m){m.fb=m.fb===v?null:v;saveChat();log('chat-feedback',{topic:m.a.topic,helpful:m.fb});const y=screen.scrollTop;render();screen.scrollTop=y;const nb=screen.querySelector(`[data-feedback="${i}:${v}"]`);if(nb)nb.focus({preventScroll:true})}return}
 if(b.dataset.go){openTopic=b.dataset.topic||'';go(b.dataset.go);return}
 if(b.dataset.context){context=b.dataset.context;log('context',{value:context});render();root.querySelector(`[data-context="${context}"]`).focus();return}
 switch(a){
@@ -1952,6 +2148,11 @@ case 'practice-zoom':practiceZoom=!practiceZoom;render();root.querySelector('[da
 case 'previous':save();if(q>0){q--;qShown=Date.now();render();screen.querySelector('input').focus()}else go('guided');break;
 case 'review-answers':q=0;go('practice');break;
 case 'copy-log':{const ta=screen.querySelector('#log-json'),st=screen.querySelector('#copy-status');const ok=()=>{st.textContent='Copied.'};try{navigator.clipboard.writeText(ta.value).then(ok).catch(()=>{ta.classList.remove('sr-only');ta.select();st.textContent='Select all and copy the text above.'})}catch(err){ta.classList.remove('sr-only');ta.select();st.textContent='Select all and copy the text above.'}break}
+case 'chat-send':sendQuestion((screen.querySelector('#chat-input')||{}).value);break;
+case 'new-chat':chat=[];draftQ='';saveChat();log('chat-new');render();{const ta=screen.querySelector('#chat-input');if(ta)ta.focus()}break;
+case 'toggle-context':useProfile=!useProfile;log('chat-profile-context',{on:useProfile});render();{const c=screen.querySelector('[data-action="toggle-context"]');if(c)c.focus()}break;
+case 'menu-toggle':setMenu(!root.classList.contains('menu-open'),true);break;
+case 'menu-close':setMenu(false,true);break;
 case 'signup':signupFrom=b.dataset.from||'sidebar';returnTo=page;log('account-prompt-opened',{from:signupFrom});go('signup');break;
 case 'decline-account':session.account={...(session.account||{}),declined:true};log('account-declined',{from:b.dataset.from||''});go('home');break;
 case 'signup-back':go(returnTo&&!['signup','signin'].includes(returnTo)?returnTo:'home');break;
@@ -1959,10 +2160,10 @@ case 'signup-submit':doSignup();break;
 case 'signin':if(!['signup','signin'].includes(page))returnTo=page;go('signin');break;
 case 'signin-back':go(returnTo&&!['signup','signin'].includes(returnTo)?returnTo:(profile?'home':'welcome'));break;
 case 'signin-submit':doSignin();break;
-case 'signout':log('signout');current=null;saveAccounts();profile=null;store.del('profile');completed=false;go('welcome');break;
-case 'reset-demo':['profile','sessions','accounts','currentAccount'].forEach(k=>store.del(k));location.href=location.pathname;break;
+case 'signout':log('signout');chat=[];store.del('chat');current=null;saveAccounts();profile=null;store.del('profile');completed=false;go('welcome');break;
+case 'reset-demo':['profile','sessions','accounts','currentAccount','chat'].forEach(k=>store.del(k));location.href=location.pathname;break;
 }});
-root.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const id=e.target.id;if(id==='su-name'||id==='su-email'){e.preventDefault();doSignup()}else if(id==='si-email'){e.preventDefault();doSignin()}});
+root.addEventListener('keydown',e=>{if(e.key==='Escape'&&root.classList.contains('menu-open')){setMenu(false,true);return}if(e.key!=='Enter')return;const id=e.target.id;if(id==='su-name'||id==='su-email'){e.preventDefault();doSignup()}else if(id==='si-email'){e.preventDefault();doSignin()}else if(id==='chat-input'&&!e.shiftKey){e.preventDefault();sendQuestion(e.target.value)}});
 window.addEventListener('hashchange',()=>{if(location.hash==='#research')go('research')});
 
 /* ---------- Start ---------- */
