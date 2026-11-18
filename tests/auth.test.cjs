@@ -1,0 +1,28 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
+for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g))if(!m[1].includes('src=')&&!m[1].includes('application/'))new vm.Script(m[2]);
+const state=new Map(),controls={};
+const c={console,URLSearchParams,Date,location:{hash:'',pathname:'/'},history:{replaceState(){}},authBusy:false,authReady:true,authUser:null,current:null,dataScope:'guest',accounts:{},profile:{name:'Guest dog'},chat:[{role:'user',text:'Guest chat'}],session:{practice:null},blank:()=>({}),draft:{},getSb:()=>c.sb,store:{get:(k,d)=>state.get(['profile','chat','accountData'].includes(k)?c.dataScope+':'+k:k)??d,set:(k,v)=>state.set(['profile','chat','accountData'].includes(k)?c.dataScope+':'+k:k,v),del:k=>state.delete(k)},validEmail:e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e),screen:{querySelector:k=>controls[k]},go:p=>{c.page=p},render:()=>{},setTimeout};
+c.acct=()=>c.authUser&&c.current?c.accounts[c.current]:null;c.saveAccounts=()=>{if(c.acct())c.store.set('accountData',c.acct())};
+vm.createContext(c);vm.runInContext(html.slice(html.indexOf('function authErrorText('),html.indexOf('const menuBtn=')),c);
+const user=id=>({id,email:id+'@example.org',email_confirmed_at:'2026-11-18',is_anonymous:false,user_metadata:{name:id}});
+async function test(){
+ c.store.set('profile',c.profile);c.store.set('chat',c.chat);
+ c.applyIdentity(user('alice'));assert.equal(c.current,'alice');assert.equal(c.chat.length,0);assert.equal(c.profile,null);
+ c.profile={name:'Alice dog'};c.store.set('profile',c.profile);c.chat=[{role:'user',text:'Alice private chat'}];c.store.set('chat',c.chat);
+ c.applyIdentity(user('bob'));assert.equal(c.profile,null);assert.equal(c.chat.length,0);
+ c.applyIdentity(user('alice'));assert.equal(c.profile.name,'Alice dog');assert.equal(c.chat[0].text,'Alice private chat');
+ c.applyIdentity(null);assert.equal(c.profile.name,'Guest dog');assert.equal(c.chat[0].text,'Guest chat');assert.equal(c.acct(),null);
+ c.applyIdentity({id:'anon',is_anonymous:true});assert.equal(c.acct(),null);
+ c.applyIdentity({id:'unverified',email:'u@example.org',is_anonymous:false});assert.equal(c.acct(),null);
+ const e={value:'alice@example.org',focus(){}};controls['#si-email']=e;controls['#si-error']={textContent:''};controls['[data-action="signin-submit"]']={};
+ let sent;c.sb={auth:{signInWithOtp:async args=>{sent=args;return {error:null}}}};
+ await c.doSignin();assert.equal(c.current,null);assert.equal(c.page,'auth-sent');assert.equal(sent.options.shouldCreateUser,false);assert.equal(sent.options.emailRedirectTo,'https://dogsignalsv3.netlify.app/');
+ c.page='signin';c.sb.auth.signInWithOtp=async()=>({error:{code:'email_address_not_authorized'}});await c.doSignin();assert.match(controls['#si-error'].textContent,/not available/);assert.equal(c.page,'signin');assert.equal(c.authBusy,false);
+ controls['#su-email']={value:'new@example.org',focus(){}};controls['#su-name']={value:'New'};controls['#su-error']={textContent:''};controls['[data-action="signup-submit"]']={};
+ c.sb.auth.signInWithOtp=async args=>{sent=args;return {error:null}};await c.doSignup();assert.equal(sent.options.shouldCreateUser,true);assert.equal(c.current,null);
+ c.applyIdentity(user('new'));assert.equal(c.profile.name,'Guest dog');assert.equal(c.chat[0].text,'Guest chat');assert.equal(c.store.get('pendingRegistration',null),null);
+ c.sb.auth.signOut=async()=>({error:new Error('offline')});await c.doSignout();assert.equal(c.current,'new');assert.match(c.authNotice,/Could not sign out/);
+ c.sb.auth.signOut=async()=>({error:null});await c.doSignout();assert.equal(c.current,null);
+ console.log('PASS: JS syntax; verified identity; anonymous/unverified exclusion; account isolation; guest preservation; magic-link waiting state; sender error; registration carryover; sign-out failure/success.');
+}test().catch(e=>{console.error(e);process.exit(1)});
