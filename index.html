@@ -1853,6 +1853,10 @@ const saveAccounts=()=>{store.set('accounts',accounts);store.set('currentAccount
 if(acct()&&acct().profile)profile=acct().profile;
 const uname=()=>acct()&&acct().name?esc(acct().name):'';
 const validEmail=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+/* Real sign-in (Supabase magic link). The whole app requires a signed-in, non-anonymous user. */
+let authUser=null,authEmail='',authBusy=false,authMsg='';
+const AUTH_PAGES=['auth-loading','signin','signup','check-email'];
+const isRealUser=u=>!!(u&&u.email&&!u.is_anonymous);
 const L={
 experience:{first:'Yes, my first dog',experienced:'Yes, and I’ve had dogs before',adopting:'Not yet. I’m thinking about adopting'},
 learned:{no:'Not yet',some:'A little: articles or videos',lots:'A lot: classes or a trainer'},
@@ -2000,7 +2004,7 @@ const DS_SUPABASE_URL='https://gnyeqxytxhdksrdyulpp.supabase.co';
 const DS_SUPABASE_KEY='sb_publishable_-Bl-lCMiMjTLiT9VX4Y3vg_Bcm_8Oaz'; // publishable key: safe to use in the browser
 let dsSb=null;
 function getSb(){if(!dsSb&&window.supabase&&window.supabase.createClient)dsSb=window.supabase.createClient(DS_SUPABASE_URL,DS_SUPABASE_KEY);return dsSb}
-async function ensureSbSession(sb){const {data}=await sb.auth.getSession();if(data&&data.session)return;const {error}=await sb.auth.signInAnonymously();if(error)throw error}
+async function ensureSbSession(sb){const {data}=await sb.auth.getSession();if(data&&data.session&&isRealUser(data.session.user))return;throw new Error('Please sign in again.')}
 function aiContext(prof){if(!prof)return '';const b=[];if(prof.name&&String(prof.name).trim())b.push('name: '+String(prof.name).trim());if(prof.age)b.push('age group: '+prof.age);if(prof.concerns&&prof.concerns.length)b.push('owner concerns: '+prof.concerns.join(', '));return b.length?'\n\n(About my dog: '+b.join('; ')+')':''}
 function answerHistory(a){
 if(!a||a.source==='error'||a.source==='fallback'||a.source!=='ai')return '';
@@ -2040,7 +2044,8 @@ if(id==='concerns')return `<div class="ob-figure"><span class="ob-icon"><i data-
 return ''}
 
 function render(){
-const onb=['welcome','ob','ready','signup','signin','account-done'].includes(page);root.classList.toggle('is-onboarding',onb);screen.classList.toggle('is-chat',page==='ask');
+if(!authUser&&!AUTH_PAGES.includes(page))page='signin';
+const onb=['welcome','ob','ready','signup','signin','account-done','check-email','auth-loading'].includes(page);root.classList.toggle('is-onboarding',onb);screen.classList.toggle('is-chat',page==='ask');
 const navKey=page==='ask'?'ask':page==='home'||page.startsWith('concept')?'home':page==='guide'?'guide':page==='research'?'':'paths';
 root.querySelectorAll('nav button').forEach(b=>{b.dataset.go===navKey?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
 sideProfile.innerHTML=profile?`<div class="side-profile">${avatar(profile)}<div><strong>${N()==='your dog'?'Your dog':N()}</strong><button class="link cursor-interaction" data-action="edit-profile">Edit profile</button></div></div>`:`<div class="side-profile"><span class="avatar avatar-empty" aria-hidden="true"><i data-lucide="dog"></i></span><div><strong>Your dog</strong><button class="link cursor-interaction" data-action="start-ob">Personalize</button></div></div>`;
@@ -2048,15 +2053,17 @@ sideProfile.innerHTML+=acct()?`<div class="side-account">Signed in${uname()?' as
 const crumbs={home:'Home',ask:'Ask a question',guide:'Practical guide',everyday:'Everyday situations',paths:'Learning paths','concept-sounds':'Ideas we’re exploring','concept-ai':'Ideas we’re exploring',research:'Research log',sources:'Sources'};
 let h=onb?'':`<div class="crumb">Learn / ${crumbs[page]||'Understand their language'}</div>`;const n=N();
 
-if(page==='welcome')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><img class="dog" src="${dog}" alt=""></div><p class="eyebrow center">Dog Signals</p><h1>Understand your dog, one signal at a time.</h1><p class="lead">Short lessons on dog body language, with practice using real photos. Learn what to notice, which situation matters, and how you could respond.</p><ul class="ob-points"><li><i data-lucide="eye" aria-hidden="true"></i>Notice the signal</li><li><i data-lucide="map-pin" aria-hidden="true"></i>Consider the situation</li><li><i data-lucide="heart-handshake" aria-hidden="true"></i>Respond with care</li></ul><p class="muted center">First, a few questions about you and your dog, so we can suggest where to start. About 1 minute.</p><div class="ob-actions"><button class="link cursor-interaction" data-action="ob-skip">Skip for now</button><button class="primary cursor-interaction" data-action="start-ob">Get started →</button></div><p class="signin-line">Already have an account? <button class="link cursor-interaction" data-action="signin">Sign in</button></p></div></div>`;
+if(page==='welcome')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><img class="dog" src="${dog}" alt=""></div><p class="eyebrow center">Dog Signals</p><h1>Understand your dog, one signal at a time.</h1><p class="lead">Short lessons on dog body language, with practice using real photos. Learn what to notice, which situation matters, and how you could respond.</p><ul class="ob-points"><li><i data-lucide="eye" aria-hidden="true"></i>Notice the signal</li><li><i data-lucide="map-pin" aria-hidden="true"></i>Consider the situation</li><li><i data-lucide="heart-handshake" aria-hidden="true"></i>Respond with care</li></ul><p class="muted center">First, a few questions about you and your dog, so we can suggest where to start. About 1 minute.</p><div class="ob-actions"><button class="link cursor-interaction" data-action="ob-skip">Skip for now</button><button class="primary cursor-interaction" data-action="start-ob">Get started →</button></div>${authUser?'':`<p class="signin-line">Already have an account? <button class="link cursor-interaction" data-action="signin">Sign in</button></p>`}</div></div>`;
 
 if(page==='ob'){const st=obSteps();if(ob>st.length-1)ob=st.length-1;const total=st.length;h+=`<div class="ob"><div class="ob-top"><span class="muted">${editing?'Edit profile · ':''}Step ${ob+1} of ${total}</span><button class="link cursor-interaction" data-action="ob-skip">${editing?'Cancel':'Skip for now'}</button></div><div class="ob-progress" role="progressbar" aria-label="Setup progress" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${ob+1}"><span style="width:${(ob+1)/total*100}%"></span></div><div class="ob-card">${obBody(st[ob])}<div class="ob-actions"><button class="link cursor-interaction" data-action="ob-back">← Back</button><button class="primary cursor-interaction" data-action="ob-next">${ob===total-1?(editing?'Save changes':'See my plan'):'Next'} →</button></div></div></div>`}
 
 if(page==='ready'){const s=suggestions(profile);h+=`<div class="ob"><div class="ob-card"><div class="ob-figure">${avatar(profile,'lg')}</div><h1>${cap(poss(n))} plan is ready.</h1><p class="lead">Everyone starts with one short lesson. After that, we suggest topics based on your answers.</p><ol class="plan-list"><li><span class="n">1</span><div><strong>Lip licking. More than one possibility.</strong><p class="muted">Learn, one guided try, then three practice questions. A few minutes.</p></div></li>${s.map((x,i)=>`<li><span class="n">${i+2}</span><div><strong>${x.title}</strong><p class="muted">${x.why}</p></div></li>`).join('')}</ol><p style="margin:10px 0 0"><button class="link cursor-interaction" data-action="edit-profile">Change my answers</button></p>${acct()?`<div class="ob-actions"><span></span><button class="primary cursor-interaction" data-go="home">Go to ${poss(n)} home →</button></div>`:`<section class="save-card"><i data-lucide="cloud-upload" aria-hidden="true"></i><div><strong>Save ${poss(n)} plan</strong><p>Create a free account to keep ${poss(n)} profile and your progress, on any device.</p></div></section><div class="ob-actions"><button class="link cursor-interaction" data-action="decline-account" data-from="ready">Continue without an account</button><button class="primary cursor-interaction" data-action="signup" data-from="ready">Save with an account →</button></div>`}</div></div>`}
 
-if(page==='signup'){const has=!!profile;h+=`<div class="ob"><div class="ob-top"><button class="link cursor-interaction" data-action="signup-back">← Back</button><span></span></div><div class="ob-card"><div class="ob-figure">${has?avatar(profile,'lg'):`<span class="ob-icon"><i data-lucide="user-round-plus" aria-hidden="true"></i></span>`}</div><h1>${has?`Save ${poss(n)} profile.`:'Create your account.'}</h1><p class="lead muted">Keep ${has?poss(n):'your dog’s'} profile and your lesson progress, and pick up where you left off on any device.</p><label class="field"><span>Your first name</span><input type="text" id="su-name" autocomplete="given-name" placeholder="e.g., Sam"></label><label class="field"><span>Email</span><input type="email" id="su-email" autocomplete="email" placeholder="name@example.com"></label><p class="muted" style="margin-top:8px">No password needed. When you come back, we’ll email you a sign-in link.</p><div id="su-error" class="error" role="alert"></div><p class="proto-note"><i data-lucide="info" aria-hidden="true"></i><span>Prototype: no account is really created and no email is sent. Everything stays in this browser, so a made-up address like test@example.com works.</span></p><div class="ob-actions"><button class="link cursor-interaction" data-action="signup-back">Not now</button><button class="primary cursor-interaction" data-action="signup-submit">Create account →</button></div><p class="signin-line">Already have an account? <button class="link cursor-interaction" data-action="signin">Sign in</button></p></div></div>`}
+if(page==='signup'){const has=!!profile;h+=`<div class="ob"><div class="ob-top"><button class="link cursor-interaction" data-action="signin">← Back</button><span></span></div><div class="ob-card"><div class="ob-figure">${has?avatar(profile,'lg'):`<span class="ob-icon"><i data-lucide="user-round-plus" aria-hidden="true"></i></span>`}</div><h1>${has?`Save ${poss(n)} profile.`:'Create your account.'}</h1><p class="lead muted">Keep ${has?poss(n):'your dog’s'} profile and your lesson progress, and pick up where you left off on any device.</p><label class="field"><span>Your first name</span><input type="text" id="su-name" autocomplete="given-name" placeholder="e.g., Sam"></label><label class="field"><span>Email</span><input type="email" id="su-email" autocomplete="email" placeholder="name@example.com"></label><p class="muted" style="margin-top:8px">No password needed. We’ll email you a link to confirm your account and sign in.</p><div id="su-error" class="error" role="alert">${authMsg}</div><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-action="signup-submit" ${authBusy?'disabled':''}>${authBusy?'Sending…':'Create account →'}</button></div><p class="signin-line">Already have an account? <button class="link cursor-interaction" data-action="signin">Sign in</button></p></div></div>`}
 
-if(page==='signin')h+=`<div class="ob"><div class="ob-top"><button class="link cursor-interaction" data-action="signin-back">← Back</button><span></span></div><div class="ob-card"><div class="ob-figure"><span class="ob-icon"><i data-lucide="log-in" aria-hidden="true"></i></span></div><h1>Welcome back.</h1><p class="lead muted">Enter your email and we’ll send you a sign-in link.</p><label class="field"><span>Email</span><input type="email" id="si-email" autocomplete="email" placeholder="name@example.com"></label><div id="si-error" class="error" role="alert"></div><p class="proto-note"><i data-lucide="info" aria-hidden="true"></i><span>Prototype: no email is sent. You’ll be signed in right away on this browser.</span></p><div class="ob-actions"><button class="link cursor-interaction" data-action="signin-back">Cancel</button><button class="primary cursor-interaction" data-action="signin-submit">Sign in →</button></div><p class="signin-line">New to Dog Signals? <button class="link cursor-interaction" data-action="start-ob">Get started</button></p></div></div>`;
+if(page==='auth-loading')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><img class="dog" src="${dog}" alt=""></div><p class="eyebrow center">Dog Signals</p><p class="lead muted center" role="status">Loading…</p></div></div>`;
+if(page==='signin')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><img class="dog" src="${dog}" alt=""></div><p class="eyebrow center">Dog Signals</p><h1>Sign in to Dog Signals.</h1><p class="lead muted">Enter your email and we’ll send you a sign-in link. No password needed.</p><label class="field"><span>Email</span><input type="email" id="si-email" autocomplete="email" placeholder="name@example.com" value="${esc(authEmail)}"></label><div id="si-error" class="error" role="alert">${authMsg}</div><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-action="signin-submit" ${authBusy?'disabled':''}>${authBusy?'Sending…':'Send sign-in link →'}</button></div><p class="signin-line">New to Dog Signals? <button class="link cursor-interaction" data-action="signup" data-from="signin">Create an account</button></p></div></div>`;
+if(page==='check-email')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><span class="ob-icon"><i data-lucide="mail-check" aria-hidden="true"></i></span></div><h1>Check your email.</h1><p class="lead">We sent a sign-in link to <strong>${esc(authEmail)}</strong>. Open it on this device to continue.</p><p class="muted">It can take a minute to arrive. If you don’t see it, check your spam folder.</p><div id="ce-msg" class="error" role="alert">${authMsg}</div><div class="ob-actions"><button class="link cursor-interaction" data-action="signin">Use a different email</button><button class="primary cursor-interaction" data-action="auth-resend" ${authBusy?'disabled':''}>${authBusy?'Sending…':'Send the link again'}</button></div></div></div>`;
 
 if(page==='account-done')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure">${profile?avatar(profile,'lg'):`<span class="ob-icon"><i data-lucide="circle-check" aria-hidden="true"></i></span>`}</div><h1>You’re all set${uname()?', '+uname():''}.</h1><p class="lead">${profile?cap(poss(n))+' profile is':'Your profile is'} saved to your account${session.practice?', along with your lesson progress':''}. Next time, sign in with your email to pick up where you left off.</p><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-go="home">Go to ${profile?poss(n)+' home':'home'} →</button></div></div></div>`;
 
@@ -2105,15 +2112,25 @@ if(typeof lucide!=='undefined')lucide.createIcons({attrs:{width:21,height:21}});
 /* ---------- Behaviour ---------- */
 function save(){if(page!=='practice')return;const checked=screen.querySelector('input[name="practice-answer"]:checked');if(checked)answers[q]=Number(checked.value)}
 function focusHeading(){const el=screen.querySelector('h1');if(el){el.tabIndex=-1;el.focus({preventScroll:true})}}
-function doSignup(){const nm=(screen.querySelector('#su-name').value||'').trim(),em=(screen.querySelector('#su-email').value||'').trim().toLowerCase(),er=screen.querySelector('#su-error');
+function authErr(e){const m=String((e&&e.message)||e||'');if(/rate|seconds|too many/i.test(m))return 'Please wait a minute before asking for another link.';if(/fetch|network/i.test(m))return 'We couldn’t reach Dog Signals. Check your connection and try again.';return 'We couldn’t send the link. Please try again.'}
+async function sendLink(em,name){const sb=getSb();if(!sb){authMsg='We couldn’t reach Dog Signals. Reload the page and try again.';render();return}
+authBusy=true;authMsg='';authEmail=em;render();
+const opts={emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true};if(name)opts.data={name};
+try{const {error}=await sb.auth.signInWithOtp({email:em,options:opts});if(error)throw error;authBusy=false;log('auth-link-sent',{signup:!!name});if(page!=='check-email')go('check-email');else{authMsg='We sent a new link.';render()}}
+catch(e){console.warn('[Dog Signals] sign-in link failed:',e);authBusy=false;authMsg=authErr(e);render()}}
+function doSignup(){if(authBusy)return;const nm=(screen.querySelector('#su-name').value||'').trim(),em=(screen.querySelector('#su-email').value||'').trim().toLowerCase(),er=screen.querySelector('#su-error');
 if(!validEmail(em)){er.textContent='Enter an email address like name@example.com.';screen.querySelector('#su-email').focus();return}
-if(accounts[em]){er.innerHTML='There’s already an account with this email. <button type="button" class="link cursor-interaction" data-action="signin">Sign in instead</button>';return}
-accounts[em]={name:nm,email:em,created:new Date().toISOString(),profile:profile||null,progress:session.practice?{lipLicking:{completed:true,firstScore:session.practice.firstScore,date:new Date().toISOString()}}:{}};current=em;saveAccounts();
-session.account={...(session.account||{}),created:true,from:signupFrom,nameAdded:!!nm};log('account-created',{from:signupFrom});go('account-done')}
-function doSignin(){const em=(screen.querySelector('#si-email').value||'').trim().toLowerCase(),er=screen.querySelector('#si-error');
+session.account={...(session.account||{}),created:true,from:signupFrom,nameAdded:!!nm};sendLink(em,nm)}
+function doSignin(){if(authBusy)return;const em=(screen.querySelector('#si-email').value||'').trim().toLowerCase(),er=screen.querySelector('#si-error');
 if(!validEmail(em)){er.textContent='Enter an email address like name@example.com.';screen.querySelector('#si-email').focus();return}
-const a=accounts[em];if(!a){er.innerHTML='There’s no account with that email in this prototype. Check the spelling, or <button type="button" class="link cursor-interaction" data-action="start-ob">get started</button>.';return}
-current=em;saveAccounts();if(a.profile){profile=a.profile;store.set('profile',profile)}completed=!!(a.progress&&a.progress.lipLicking);welcomeBack=true;session.account={...(session.account||{}),signedIn:true};log('signin');go('home')}
+sendLink(em,'')}
+function onSignedIn(u){const first=!authUser;authUser=u;authMsg='';authBusy=false;const key=u.id;
+if(!accounts[key])accounts[key]={name:(u.user_metadata&&u.user_metadata.name)||'',email:u.email,created:new Date().toISOString(),profile:profile||null,progress:{}};
+else accounts[key].email=u.email;
+current=key;saveAccounts();const a=accounts[key];if(a.profile){profile=a.profile;store.set('profile',profile)}else if(profile){a.profile=profile;saveAccounts()}
+if(a.progress&&a.progress.lipLicking)completed=true;session.account={...(session.account||{}),signedIn:true};
+if(first&&AUTH_PAGES.includes(page)){welcomeBack=!!profile;log('signin');go(startPage())}}
+function onSignedOut(){authUser=null;current=null;saveAccounts();chat=[];store.del('chat');profile=null;store.del('profile');completed=false;if(!AUTH_PAGES.includes(page)||page==='auth-loading')go('signin')}
 const menuBtn=root.querySelector('.menu-toggle');
 function setMenu(open,returnFocus){root.classList.toggle('menu-open',open);screen.inert=open;if(menuBtn){menuBtn.setAttribute('aria-expanded',String(open));menuBtn.setAttribute('aria-label',open?'Close menu':'Open menu')}if(open){const f=root.querySelector('#dog-menu nav button[aria-current]')||root.querySelector('#dog-menu nav button');if(f)f.focus()}else if(returnFocus&&menuBtn)menuBtn.focus()}
 try{const mq=matchMedia('(max-width:600px)');mq.addEventListener('change',()=>setMenu(false))}catch(e){}
@@ -2162,26 +2179,34 @@ case 'new-chat':chat=[];chatBusy=false;draftQ='';saveChat();log('chat-new');rend
 case 'toggle-context':useProfile=!useProfile;log('chat-profile-context',{on:useProfile});render();{const c=screen.querySelector('[data-action="toggle-context"]');if(c)c.focus()}break;
 case 'menu-toggle':setMenu(!root.classList.contains('menu-open'),true);break;
 case 'menu-close':setMenu(false,true);break;
-case 'signup':signupFrom=b.dataset.from||'sidebar';returnTo=page;log('account-prompt-opened',{from:signupFrom});go('signup');break;
+case 'signup':authMsg='';signupFrom=b.dataset.from||'sidebar';returnTo=page;log('account-prompt-opened',{from:signupFrom});go('signup');break;
 case 'decline-account':session.account={...(session.account||{}),declined:true};log('account-declined',{from:b.dataset.from||''});go('home');break;
 case 'signup-back':go(returnTo&&!['signup','signin'].includes(returnTo)?returnTo:'home');break;
 case 'signup-submit':doSignup();break;
-case 'signin':if(!['signup','signin'].includes(page))returnTo=page;go('signin');break;
+case 'signin':if(!['signup','signin'].includes(page))returnTo=page;authMsg='';go('signin');break;
 case 'signin-back':go(returnTo&&!['signup','signin'].includes(returnTo)?returnTo:(profile?'home':'welcome'));break;
 case 'signin-submit':doSignin();break;
-case 'signout':log('signout');chat=[];store.del('chat');current=null;saveAccounts();profile=null;store.del('profile');completed=false;go('welcome');break;
-case 'reset-demo':['profile','sessions','accounts','currentAccount','chat'].forEach(k=>store.del(k));location.href=location.pathname;break;
+case 'auth-resend':if(!authBusy&&authEmail)sendLink(authEmail,'');break;
+case 'signout':{log('signout');const sb=getSb();onSignedOut();if(sb)sb.auth.signOut().catch(()=>{});break}
+case 'reset-demo':['profile','sessions','accounts','currentAccount','chat'].forEach(k=>store.del(k));{const sb=getSb();(sb?sb.auth.signOut().catch(()=>{}):Promise.resolve()).then(()=>{location.href=location.pathname})}break;
 }});
 root.addEventListener('keydown',e=>{if(e.key==='Escape'&&root.classList.contains('menu-open')){setMenu(false,true);return}if(e.key!=='Enter')return;const id=e.target.id;if(id==='su-name'||id==='su-email'){e.preventDefault();doSignup()}else if(id==='si-email'){e.preventDefault();doSignin()}else if(id==='chat-input'&&!e.shiftKey){e.preventDefault();sendQuestion(e.target.value)}});
 window.addEventListener('hashchange',()=>{if(location.hash==='#research')go('research')});
 
 /* ---------- Start ---------- */
 if(acct()&&acct().progress&&acct().progress.lipLicking)completed=true;
-page=profile?'home':'welcome';
-const st=params.get('start')||(hash.startsWith('start-')?hash.slice(6):'');if(['home','lesson','path'].includes(st))page=st;
-if(params.has('research')||hash==='research')page='research';
-session.entry={page,query:location.search,hash:location.hash};session.firstSeen[page]=Date.now();log('view',{page});
+function startPage(){let p=profile?'home':'welcome';const st=params.get('start')||(hash.startsWith('start-')?hash.slice(6):'');if(['home','lesson','path'].includes(st))p=st;if(params.has('research')||hash==='research')p='research';return p}
+// Errors from an expired or already-used email link arrive in the URL hash.
+{const hp=new URLSearchParams(hash);if(hp.get('error')||hp.get('error_code')){authMsg=hp.get('error_code')==='otp_expired'?'That link has expired or was already used. Enter your email to get a new one.':'That sign-in link didn’t work. Enter your email to get a new one.';try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}}
+page='auth-loading';
+session.entry={page:startPage(),query:location.search,hash:hash.includes('access_token')?'#(sign-in link)':location.hash};session.firstSeen[page]=Date.now();
 render();
+{const sb=getSb();
+if(!sb){authMsg='We couldn’t reach Dog Signals. Reload the page and try again.';go('signin')}
+else{let settled=false;
+sb.auth.onAuthStateChange((ev,s)=>{const u=s&&s.user;setTimeout(()=>{if(isRealUser(u)){settled=true;if(!authUser||authUser.id!==u.id)onSignedIn(u);else authUser=u}else if(ev==='SIGNED_OUT'||(ev==='INITIAL_SESSION'&&!u)){settled=true;if(authUser)onSignedOut();else if(page==='auth-loading')go('signin')}},0)});
+sb.auth.getSession().then(({data})=>{const u=data&&data.session&&data.session.user;if(isRealUser(u)){if(!authUser)onSignedIn(u)}else if(!authUser&&page==='auth-loading')go('signin')}).catch(()=>{if(page==='auth-loading')go('signin')});
+}}
 })();
 
 </script>
