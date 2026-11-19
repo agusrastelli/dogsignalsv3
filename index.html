@@ -1716,8 +1716,8 @@ html>body{padding:0}</style>
 #dogapp .ob-points,#dogapp .file-btn,#dogapp .play,#dogapp .care-note{--icon-size:18px}
 #dogapp .placeholder{--icon-size:44px}
 @media(max-width:600px){#dogapp .hello h1 br{display:none}#dogapp .hello h1{font-size:28px}}
-/* Account: deferred sign-up, passwordless sign-in (prototype) */
-#dogapp input[type=email]{width:100%;border:1px solid var(--control-line);border-radius:10px;padding:11px 14px;min-height:48px}
+/* Account: email + password sign-in (Supabase) */
+#dogapp input[type=email],#dogapp input[type=password]{width:100%;border:1px solid var(--control-line);border-radius:10px;padding:11px 14px;min-height:48px}
 #dogapp .signin-line{text-align:center;margin:20px 0 0;font-size:15px!important}
 #dogapp .signin-line .link{min-height:32px!important;padding:0 2px}
 #dogapp .save-card{display:flex;gap:14px;align-items:flex-start;margin:22px 0 0;padding:16px 18px;border-radius:12px;background:#f5edf8;border:1px solid #d9c2e6;--icon-size:24px}
@@ -1854,8 +1854,8 @@ if(acct()&&acct().profile)profile=acct().profile;
 const uname=()=>acct()&&acct().name?esc(acct().name):'';
 const validEmail=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 /* Real sign-in (Supabase magic link). The whole app requires a signed-in, non-anonymous user. */
-let authUser=null,authEmail='',authBusy=false,authMsg='';
-const AUTH_PAGES=['auth-loading','signin','signup','check-email'];
+let authUser=null,authEmail='',authBusy=false,authMsg='',authNotice='confirm',recovery=/type=recovery/.test(location.hash);
+const AUTH_PAGES=['auth-loading','signin','signup','check-email','forgot'];
 const isRealUser=u=>!!(u&&u.email&&!u.is_anonymous);
 const L={
 experience:{first:'Yes, my first dog',experienced:'Yes, and I’ve had dogs before',adopting:'Not yet. I’m thinking about adopting'},
@@ -2045,7 +2045,7 @@ return ''}
 
 function render(){
 if(!authUser&&!AUTH_PAGES.includes(page))page='signin';
-const onb=['welcome','ob','ready','signup','signin','account-done','check-email','auth-loading'].includes(page);root.classList.toggle('is-onboarding',onb);screen.classList.toggle('is-chat',page==='ask');
+const onb=['welcome','ob','ready','signup','signin','account-done','check-email','auth-loading','forgot','new-password'].includes(page);root.classList.toggle('is-onboarding',onb);screen.classList.toggle('is-chat',page==='ask');
 const navKey=page==='ask'?'ask':page==='home'||page.startsWith('concept')?'home':page==='guide'?'guide':page==='research'?'':'paths';
 root.querySelectorAll('nav button').forEach(b=>{b.dataset.go===navKey?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
 sideProfile.innerHTML=profile?`<div class="side-profile">${avatar(profile)}<div><strong>${N()==='your dog'?'Your dog':N()}</strong><button class="link cursor-interaction" data-action="edit-profile">Edit profile</button></div></div>`:`<div class="side-profile"><span class="avatar avatar-empty" aria-hidden="true"><i data-lucide="dog"></i></span><div><strong>Your dog</strong><button class="link cursor-interaction" data-action="start-ob">Personalize</button></div></div>`;
@@ -2059,11 +2059,13 @@ if(page==='ob'){const st=obSteps();if(ob>st.length-1)ob=st.length-1;const total=
 
 if(page==='ready'){const s=suggestions(profile);h+=`<div class="ob"><div class="ob-card"><div class="ob-figure">${avatar(profile,'lg')}</div><h1>${cap(poss(n))} plan is ready.</h1><p class="lead">Everyone starts with one short lesson. After that, we suggest topics based on your answers.</p><ol class="plan-list"><li><span class="n">1</span><div><strong>Lip licking. More than one possibility.</strong><p class="muted">Learn, one guided try, then three practice questions. A few minutes.</p></div></li>${s.map((x,i)=>`<li><span class="n">${i+2}</span><div><strong>${x.title}</strong><p class="muted">${x.why}</p></div></li>`).join('')}</ol><p style="margin:10px 0 0"><button class="link cursor-interaction" data-action="edit-profile">Change my answers</button></p>${acct()?`<div class="ob-actions"><span></span><button class="primary cursor-interaction" data-go="home">Go to ${poss(n)} home →</button></div>`:`<section class="save-card"><i data-lucide="cloud-upload" aria-hidden="true"></i><div><strong>Save ${poss(n)} plan</strong><p>Create a free account to keep ${poss(n)} profile and your progress, on any device.</p></div></section><div class="ob-actions"><button class="link cursor-interaction" data-action="decline-account" data-from="ready">Continue without an account</button><button class="primary cursor-interaction" data-action="signup" data-from="ready">Save with an account →</button></div>`}</div></div>`}
 
-if(page==='signup'){const has=!!profile;h+=`<div class="ob"><div class="ob-top"><button class="link cursor-interaction" data-action="signin">← Back</button><span></span></div><div class="ob-card"><div class="ob-figure">${has?avatar(profile,'lg'):`<span class="ob-icon"><i data-lucide="user-round-plus" aria-hidden="true"></i></span>`}</div><h1>${has?`Save ${poss(n)} profile.`:'Create your account.'}</h1><p class="lead muted">Keep ${has?poss(n):'your dog’s'} profile and your lesson progress, and pick up where you left off on any device.</p><label class="field"><span>Your first name</span><input type="text" id="su-name" autocomplete="given-name" placeholder="e.g., Sam"></label><label class="field"><span>Email</span><input type="email" id="su-email" autocomplete="email" placeholder="name@example.com"></label><p class="muted" style="margin-top:8px">No password needed. We’ll email you a link to confirm your account and sign in.</p><div id="su-error" class="error" role="alert">${authMsg}</div><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-action="signup-submit" ${authBusy?'disabled':''}>${authBusy?'Sending…':'Create account →'}</button></div><p class="signin-line">Already have an account? <button class="link cursor-interaction" data-action="signin">Sign in</button></p></div></div>`}
+if(page==='signup'){const has=!!profile;h+=`<div class="ob"><div class="ob-top"><button class="link cursor-interaction" data-action="signin">← Back</button><span></span></div><div class="ob-card"><div class="ob-figure">${has?avatar(profile,'lg'):`<span class="ob-icon"><i data-lucide="user-round-plus" aria-hidden="true"></i></span>`}</div><h1>${has?`Save ${poss(n)} profile.`:'Create your account.'}</h1><p class="lead muted">Keep ${has?poss(n):'your dog’s'} profile and your lesson progress, and pick up where you left off on any device.</p><label class="field"><span>Your first name</span><input type="text" id="su-name" autocomplete="given-name" placeholder="e.g., Sam"></label><label class="field"><span>Email</span><input type="email" id="su-email" autocomplete="email" placeholder="name@example.com" value="${esc(authEmail)}"></label><label class="field"><span>Password</span><input type="password" id="su-password" autocomplete="new-password" placeholder="At least 8 characters"></label><p class="muted" style="margin-top:8px">We’ll email you a link to confirm your address.</p><div id="su-error" class="error" role="alert">${authMsg}</div><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-action="signup-submit">Create account →</button></div><p class="signin-line">Already have an account? <button class="link cursor-interaction" data-action="signin">Sign in</button></p></div></div>`}
 
 if(page==='auth-loading')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><img class="dog" src="${dog}" alt=""></div><p class="eyebrow center">Dog Signals</p><p class="lead muted center" role="status">Loading…</p></div></div>`;
-if(page==='signin')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><img class="dog" src="${dog}" alt=""></div><p class="eyebrow center">Dog Signals</p><h1>Sign in to Dog Signals.</h1><p class="lead muted">Enter your email and we’ll send you a sign-in link. No password needed.</p><label class="field"><span>Email</span><input type="email" id="si-email" autocomplete="email" placeholder="name@example.com" value="${esc(authEmail)}"></label><div id="si-error" class="error" role="alert">${authMsg}</div><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-action="signin-submit" ${authBusy?'disabled':''}>${authBusy?'Sending…':'Send sign-in link →'}</button></div><p class="signin-line">New to Dog Signals? <button class="link cursor-interaction" data-action="signup" data-from="signin">Create an account</button></p></div></div>`;
-if(page==='check-email')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><span class="ob-icon"><i data-lucide="mail-check" aria-hidden="true"></i></span></div><h1>Check your email.</h1><p class="lead">We sent a sign-in link to <strong>${esc(authEmail)}</strong>. Open it on this device to continue.</p><p class="muted">It can take a minute to arrive. If you don’t see it, check your spam folder.</p><div id="ce-msg" class="error" role="alert">${authMsg}</div><div class="ob-actions"><button class="link cursor-interaction" data-action="signin">Use a different email</button><button class="primary cursor-interaction" data-action="auth-resend" ${authBusy?'disabled':''}>${authBusy?'Sending…':'Send the link again'}</button></div></div></div>`;
+if(page==='signin')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><img class="dog" src="${dog}" alt=""></div><p class="eyebrow center">Dog Signals</p><h1>Sign in to Dog Signals.</h1><label class="field"><span>Email</span><input type="email" id="si-email" autocomplete="email" placeholder="name@example.com" value="${esc(authEmail)}"></label><label class="field"><span>Password</span><input type="password" id="si-password" autocomplete="current-password"></label><p style="margin:8px 0 0"><button class="link cursor-interaction" data-action="forgot">Forgot your password?</button></p><div id="si-error" class="error" role="alert">${authMsg}</div><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-action="signin-submit">Sign in →</button></div><p class="signin-line">New to Dog Signals? <button class="link cursor-interaction" data-action="signup" data-from="signin">Create an account</button></p></div></div>`;
+if(page==='forgot')h+=`<div class="ob"><div class="ob-top"><button class="link cursor-interaction" data-action="signin">← Back</button><span></span></div><div class="ob-card"><div class="ob-figure"><span class="ob-icon"><i data-lucide="key-round" aria-hidden="true"></i></span></div><h1>Reset your password.</h1><p class="lead muted">Enter your email and we’ll send you a link to choose a new password.</p><label class="field"><span>Email</span><input type="email" id="fp-email" autocomplete="email" placeholder="name@example.com" value="${esc(authEmail)}"></label><div id="fp-error" class="error" role="alert">${authMsg}</div><div class="ob-actions"><button class="link cursor-interaction" data-action="signin">Cancel</button><button class="primary cursor-interaction" data-action="forgot-submit">Send reset link →</button></div></div></div>`;
+if(page==='check-email'){const r=authNotice==='reset';h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><span class="ob-icon"><i data-lucide="mail-check" aria-hidden="true"></i></span></div><h1>${r?'Check your email.':'Confirm your email.'}</h1><p class="lead">${r?`We sent a link to reset your password to <strong>${esc(authEmail)}</strong>. Open it on this device to choose a new password.`:`We sent a confirmation link to <strong>${esc(authEmail)}</strong>. Open it to activate your account and sign in.`}</p><p class="muted">It can take a minute to arrive. If you don’t see it, check your spam folder.</p><div id="ce-msg" class="error" role="alert">${authMsg}</div><div class="ob-actions"><button class="link cursor-interaction" data-action="signin">Back to sign in</button><button class="primary cursor-interaction" data-action="auth-resend">Send it again</button></div></div></div>`}
+if(page==='new-password')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure"><span class="ob-icon"><i data-lucide="key-round" aria-hidden="true"></i></span></div><h1>Choose a new password.</h1><p class="lead muted">${authUser?`For ${esc(authUser.email)}. `:''}Use at least 8 characters.</p><label class="field"><span>Password</span><input type="password" id="np-password" autocomplete="new-password"></label><div id="np-error" class="error" role="alert">${authMsg}</div><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-action="np-submit">Save password →</button></div></div></div>`;
 
 if(page==='account-done')h+=`<div class="ob"><div class="ob-card"><div class="ob-figure">${profile?avatar(profile,'lg'):`<span class="ob-icon"><i data-lucide="circle-check" aria-hidden="true"></i></span>`}</div><h1>You’re all set${uname()?', '+uname():''}.</h1><p class="lead">${profile?cap(poss(n))+' profile is':'Your profile is'} saved to your account${session.practice?', along with your lesson progress':''}. Next time, sign in with your email to pick up where you left off.</p><div class="ob-actions"><span></span><button class="primary cursor-interaction" data-go="home">Go to ${profile?poss(n)+' home':'home'} →</button></div></div></div>`;
 
@@ -2112,24 +2114,60 @@ if(typeof lucide!=='undefined')lucide.createIcons({attrs:{width:21,height:21}});
 /* ---------- Behaviour ---------- */
 function save(){if(page!=='practice')return;const checked=screen.querySelector('input[name="practice-answer"]:checked');if(checked)answers[q]=Number(checked.value)}
 function focusHeading(){const el=screen.querySelector('h1');if(el){el.tabIndex=-1;el.focus({preventScroll:true})}}
-function authErr(e){const m=String((e&&e.message)||e||'');if(/rate|seconds|too many/i.test(m))return 'Please wait a minute before asking for another link.';if(/fetch|network/i.test(m))return 'We couldn’t reach Dog Signals. Check your connection and try again.';return 'We couldn’t send the link. Please try again.'}
-async function sendLink(em,name){const sb=getSb();if(!sb){authMsg='We couldn’t reach Dog Signals. Reload the page and try again.';render();return}
-authBusy=true;authMsg='';authEmail=em;render();
-const opts={emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true};if(name)opts.data={name};
-try{const {error}=await sb.auth.signInWithOtp({email:em,options:opts});if(error)throw error;authBusy=false;log('auth-link-sent',{signup:!!name});if(page!=='check-email')go('check-email');else{authMsg='We sent a new link.';render()}}
-catch(e){console.warn('[Dog Signals] sign-in link failed:',e);authBusy=false;authMsg=authErr(e);render()}}
-function doSignup(){if(authBusy)return;const nm=(screen.querySelector('#su-name').value||'').trim(),em=(screen.querySelector('#su-email').value||'').trim().toLowerCase(),er=screen.querySelector('#su-error');
-if(!validEmail(em)){er.textContent='Enter an email address like name@example.com.';screen.querySelector('#su-email').focus();return}
-session.account={...(session.account||{}),created:true,from:signupFrom,nameAdded:!!nm};sendLink(em,nm)}
-function doSignin(){if(authBusy)return;const em=(screen.querySelector('#si-email').value||'').trim().toLowerCase(),er=screen.querySelector('#si-error');
-if(!validEmail(em)){er.textContent='Enter an email address like name@example.com.';screen.querySelector('#si-email').focus();return}
-sendLink(em,'')}
+const NO_CONN='We couldn’t reach Dog Signals. Reload the page and try again.';
+function authErr(e){const m=String((e&&e.message)||e||'');
+if(/invalid login credentials/i.test(m))return 'That email and password don’t match. Try again, or reset your password.';
+if(/email not confirmed/i.test(m))return 'confirm';
+if(/already (been )?registered|already exists/i.test(m))return 'exists';
+if(/different from the old/i.test(m))return 'Choose a password you haven’t used before.';
+if(/password should|weak|at least|characters/i.test(m))return 'Choose a stronger password: at least 8 characters.';
+if(/rate|seconds|too many/i.test(m))return 'Too many tries. Please wait a minute and try again.';
+if(/fetch|network/i.test(m))return 'We couldn’t reach Dog Signals. Check your connection and try again.';
+return 'Something went wrong. Please try again.'}
+const EXISTS='There’s already an account with this email. <button type="button" class="link cursor-interaction" data-action="signin">Sign in instead</button>, or reset your password if you don’t have one yet.';
+const authRedirect=()=>location.origin+location.pathname;
+const fval=id=>((screen.querySelector(id)||{}).value||'');
+function authErrShow(id,html){const er=screen.querySelector(id);if(er)er.innerHTML=html}
+function authBusyUI(on,label){authBusy=on;const b=screen.querySelector('.ob-actions .primary');if(!b)return;if(on){b.dataset.label=b.innerHTML;b.disabled=true;b.textContent=label}else{b.disabled=false;if(b.dataset.label)b.innerHTML=b.dataset.label}}
+function authCheckEmail(id,em){if(validEmail(em))return true;authErrShow(id,'Enter an email address like name@example.com.');return false}
+async function doSignin(){if(authBusy)return;const sb=getSb(),em=fval('#si-email').trim().toLowerCase(),pw=fval('#si-password');
+if(!authCheckEmail('#si-error',em)){screen.querySelector('#si-email').focus();return}
+if(!pw){authErrShow('#si-error','Enter your password.');screen.querySelector('#si-password').focus();return}
+if(!sb){authErrShow('#si-error',NO_CONN);return}
+authEmail=em;authErrShow('#si-error','');authBusyUI(true,'Signing in…');
+try{const {error}=await sb.auth.signInWithPassword({email:em,password:pw});if(error)throw error;authBusyUI(false)}
+catch(e){console.warn('[Dog Signals] sign-in failed:',e);authBusyUI(false);const m=authErr(e);if(m==='confirm'){authNotice='confirm';authMsg='Confirm your email first. Open the link we sent you, or send it again.';go('check-email');return}authErrShow('#si-error',esc(m));const f=screen.querySelector('#si-password');if(f){f.value='';f.focus()}}}
+async function doSignup(){if(authBusy)return;const sb=getSb(),nm=fval('#su-name').trim(),em=fval('#su-email').trim().toLowerCase(),pw=fval('#su-password');
+if(!authCheckEmail('#su-error',em)){screen.querySelector('#su-email').focus();return}
+if(pw.length<8){authErrShow('#su-error','Use at least 8 characters for your password.');screen.querySelector('#su-password').focus();return}
+if(!sb){authErrShow('#su-error',NO_CONN);return}
+authEmail=em;authErrShow('#su-error','');authBusyUI(true,'Creating account…');
+try{const {data,error}=await sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:authRedirect(),data:nm?{name:nm}:{}}});if(error)throw error;authBusyUI(false);
+if(data&&data.user&&Array.isArray(data.user.identities)&&data.user.identities.length===0){authErrShow('#su-error',EXISTS);return}
+session.account={...(session.account||{}),created:true,from:signupFrom,nameAdded:!!nm};log('account-created',{from:signupFrom});
+if(data&&data.session)return;authNotice='confirm';authMsg='';go('check-email')}
+catch(e){console.warn('[Dog Signals] sign-up failed:',e);authBusyUI(false);const m=authErr(e);authErrShow('#su-error',m==='exists'?EXISTS:esc(m))}}
+async function doForgot(){if(authBusy)return;const sb=getSb(),em=fval('#fp-email').trim().toLowerCase();
+if(!authCheckEmail('#fp-error',em)){screen.querySelector('#fp-email').focus();return}
+if(!sb){authErrShow('#fp-error',NO_CONN);return}
+authEmail=em;authErrShow('#fp-error','');authBusyUI(true,'Sending…');
+try{const {error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:authRedirect()});if(error)throw error;authBusyUI(false);log('password-reset-requested');authNotice='reset';authMsg='';go('check-email')}
+catch(e){console.warn('[Dog Signals] reset failed:',e);authBusyUI(false);authErrShow('#fp-error',esc(authErr(e)))}}
+async function doResend(){if(authBusy||!authEmail)return;const sb=getSb();if(!sb){authErrShow('#ce-msg',NO_CONN);return}authErrShow('#ce-msg','');authBusyUI(true,'Sending…');
+try{const {error}=authNotice==='reset'?await sb.auth.resetPasswordForEmail(authEmail,{redirectTo:authRedirect()}):await sb.auth.resend({type:'signup',email:authEmail,options:{emailRedirectTo:authRedirect()}});if(error)throw error;authBusyUI(false);authErrShow('#ce-msg','We sent it again.')}
+catch(e){authBusyUI(false);authErrShow('#ce-msg',esc(authErr(e)))}}
+async function doNewPassword(){if(authBusy)return;const sb=getSb(),pw=fval('#np-password');
+if(pw.length<8){authErrShow('#np-error','Use at least 8 characters for your password.');screen.querySelector('#np-password').focus();return}
+if(!sb){authErrShow('#np-error',NO_CONN);return}
+authErrShow('#np-error','');authBusyUI(true,'Saving…');
+try{const {error}=await sb.auth.updateUser({password:pw});if(error)throw error;authBusyUI(false);recovery=false;log('password-updated');go(startPage())}
+catch(e){console.warn('[Dog Signals] password update failed:',e);authBusyUI(false);authErrShow('#np-error',esc(authErr(e)))}}
 function onSignedIn(u){const first=!authUser;authUser=u;authMsg='';authBusy=false;const key=u.id;
 if(!accounts[key])accounts[key]={name:(u.user_metadata&&u.user_metadata.name)||'',email:u.email,created:new Date().toISOString(),profile:profile||null,progress:{}};
 else accounts[key].email=u.email;
 current=key;saveAccounts();const a=accounts[key];if(a.profile){profile=a.profile;store.set('profile',profile)}else if(profile){a.profile=profile;saveAccounts()}
 if(a.progress&&a.progress.lipLicking)completed=true;session.account={...(session.account||{}),signedIn:true};
-if(first&&AUTH_PAGES.includes(page)){welcomeBack=!!profile;log('signin');go(startPage())}}
+if(first&&AUTH_PAGES.includes(page)){welcomeBack=!!profile&&!recovery;log('signin');go(recovery?'new-password':startPage())}}
 function onSignedOut(){authUser=null;current=null;saveAccounts();chat=[];store.del('chat');profile=null;store.del('profile');completed=false;if(!AUTH_PAGES.includes(page)||page==='auth-loading')go('signin')}
 const menuBtn=root.querySelector('.menu-toggle');
 function setMenu(open,returnFocus){root.classList.toggle('menu-open',open);screen.inert=open;if(menuBtn){menuBtn.setAttribute('aria-expanded',String(open));menuBtn.setAttribute('aria-label',open?'Close menu':'Open menu')}if(open){const f=root.querySelector('#dog-menu nav button[aria-current]')||root.querySelector('#dog-menu nav button');if(f)f.focus()}else if(returnFocus&&menuBtn)menuBtn.focus()}
@@ -2186,25 +2224,28 @@ case 'signup-submit':doSignup();break;
 case 'signin':if(!['signup','signin'].includes(page))returnTo=page;authMsg='';go('signin');break;
 case 'signin-back':go(returnTo&&!['signup','signin'].includes(returnTo)?returnTo:(profile?'home':'welcome'));break;
 case 'signin-submit':doSignin();break;
-case 'auth-resend':if(!authBusy&&authEmail)sendLink(authEmail,'');break;
-case 'signout':{log('signout');const sb=getSb();onSignedOut();if(sb)sb.auth.signOut().catch(()=>{});break}
+case 'auth-resend':doResend();break;
+case 'forgot':{const e=screen.querySelector('#si-email');if(e&&e.value.trim())authEmail=e.value.trim().toLowerCase();authMsg='';go('forgot');break}
+case 'forgot-submit':doForgot();break;
+case 'np-submit':doNewPassword();break;
+case 'signout':{log('signout');recovery=false;const sb=getSb();onSignedOut();if(sb)sb.auth.signOut().catch(()=>{});break}
 case 'reset-demo':['profile','sessions','accounts','currentAccount','chat'].forEach(k=>store.del(k));{const sb=getSb();(sb?sb.auth.signOut().catch(()=>{}):Promise.resolve()).then(()=>{location.href=location.pathname})}break;
 }});
-root.addEventListener('keydown',e=>{if(e.key==='Escape'&&root.classList.contains('menu-open')){setMenu(false,true);return}if(e.key!=='Enter')return;const id=e.target.id;if(id==='su-name'||id==='su-email'){e.preventDefault();doSignup()}else if(id==='si-email'){e.preventDefault();doSignin()}else if(id==='chat-input'&&!e.shiftKey){e.preventDefault();sendQuestion(e.target.value)}});
+root.addEventListener('keydown',e=>{if(e.key==='Escape'&&root.classList.contains('menu-open')){setMenu(false,true);return}if(e.key!=='Enter')return;const id=e.target.id;if(id==='su-name'||id==='su-email'||id==='su-password'){e.preventDefault();doSignup()}else if(id==='si-email'||id==='si-password'){e.preventDefault();doSignin()}else if(id==='fp-email'){e.preventDefault();doForgot()}else if(id==='np-password'){e.preventDefault();doNewPassword()}else if(id==='chat-input'&&!e.shiftKey){e.preventDefault();sendQuestion(e.target.value)}});
 window.addEventListener('hashchange',()=>{if(location.hash==='#research')go('research')});
 
 /* ---------- Start ---------- */
 if(acct()&&acct().progress&&acct().progress.lipLicking)completed=true;
 function startPage(){let p=profile?'home':'welcome';const st=params.get('start')||(hash.startsWith('start-')?hash.slice(6):'');if(['home','lesson','path'].includes(st))p=st;if(params.has('research')||hash==='research')p='research';return p}
 // Errors from an expired or already-used email link arrive in the URL hash.
-{const hp=new URLSearchParams(hash);if(hp.get('error')||hp.get('error_code')){authMsg=hp.get('error_code')==='otp_expired'?'That link has expired or was already used. Enter your email to get a new one.':'That sign-in link didn’t work. Enter your email to get a new one.';try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}}
+{const hp=new URLSearchParams(hash);if(hp.get('error')||hp.get('error_code')){recovery=false;authMsg=hp.get('error_code')==='otp_expired'?'That email link has expired or was already used. Sign in, or ask for a new link.':'That email link didn’t work. Sign in, or ask for a new link.';try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}}
 page='auth-loading';
-session.entry={page:startPage(),query:location.search,hash:hash.includes('access_token')?'#(sign-in link)':location.hash};session.firstSeen[page]=Date.now();
+session.entry={page:startPage(),query:location.search,hash:hash.includes('access_token')?'#(email link)':location.hash};session.firstSeen[page]=Date.now();
 render();
 {const sb=getSb();
 if(!sb){authMsg='We couldn’t reach Dog Signals. Reload the page and try again.';go('signin')}
 else{let settled=false;
-sb.auth.onAuthStateChange((ev,s)=>{const u=s&&s.user;setTimeout(()=>{if(isRealUser(u)){settled=true;if(!authUser||authUser.id!==u.id)onSignedIn(u);else authUser=u}else if(ev==='SIGNED_OUT'||(ev==='INITIAL_SESSION'&&!u)){settled=true;if(authUser)onSignedOut();else if(page==='auth-loading')go('signin')}},0)});
+sb.auth.onAuthStateChange((ev,s)=>{const u=s&&s.user;if(ev==='PASSWORD_RECOVERY')recovery=true;setTimeout(()=>{if(isRealUser(u)){settled=true;if(!authUser||authUser.id!==u.id)onSignedIn(u);else{authUser=u;if(ev==='PASSWORD_RECOVERY'&&page!=='new-password')go('new-password')}}else if(ev==='SIGNED_OUT'||(ev==='INITIAL_SESSION'&&!u)){settled=true;if(authUser)onSignedOut();else if(page==='auth-loading')go('signin')}},0)});
 sb.auth.getSession().then(({data})=>{const u=data&&data.session&&data.session.user;if(isRealUser(u)){if(!authUser)onSignedIn(u)}else if(!authUser&&page==='auth-loading')go('signin')}).catch(()=>{if(page==='auth-loading')go('signin')});
 }}
 })();
